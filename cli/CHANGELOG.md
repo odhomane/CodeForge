@@ -2,7 +2,7 @@
 
 ## v0.1.0 — 2026-03-14 (Experimental)
 
-Initial release. Ships with CodeForge v2.1.0.
+Initial release. Ships with CodeForge v2.1.1.
 
 ### Command Groups
 
