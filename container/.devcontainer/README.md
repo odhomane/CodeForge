@@ -197,6 +197,7 @@ claude --resume               # Resume previous session
 | Tool | Description |
 |------|-------------|
 | `claude` | Claude Code CLI |
+| `codeforge` | CodeForge CLI (experimental) — session search, plugin management, indexing |
 | `cc` | Wrapper with auto-configuration |
 | `ccusage` | Token usage analyzer |
 | `ccburn` | Visual token burn rate tracker with pace indicators |
@@ -350,73 +351,75 @@ Skills in `plugins/devs-marketplace/plugins/skill-engine/skills/` provide domain
 
 `api-design` · `ast-grep-patterns` · `claude-agent-sdk` · `claude-code-headless` · `debugging` · `dependency-management` · `docker` · `docker-py` · `documentation-patterns` · `fastapi` · `git-forensics` · `migration-patterns` · `performance-profiling` · `pydantic-ai` · `refactoring-patterns` · `security-checklist` · `skill-building` · `sqlite` · `svelte5` · `team` · `testing` · `worktree`
 
-### Spec Skills (8) — `spec-workflow` plugin
+### Spec Skills (3) — `spec-workflow` plugin
 
 Skills in `plugins/devs-marketplace/plugins/spec-workflow/skills/`:
 
-`spec-build` · `spec-check` · `spec-init` · `spec-new` · `spec-refine` · `spec-review` · `spec-update` · `specification-writing`
+`spec` · `build` · `specs`
 
 ## Specification Workflow
 
-CodeForge includes a specification-driven development workflow. Every non-trivial feature gets a spec before implementation begins.
+CodeForge includes a specification-driven development workflow using directory-based "spec packages." Every non-trivial feature gets a spec package before implementation begins.
 
 ### Quick Start
 
 ```bash
-/spec-init                       # Bootstrap .specs/ directory (first time only)
-/spec-new auth-flow              # Create a feature spec (domain is inferred)
-/spec-refine auth-flow           # Validate assumptions with user
-# ... implement the feature ...
-/spec-update auth-flow           # As-built update after implementation
-/spec-check                      # Audit all specs for health
+/spec auth-flow                  # Create, refine, and approve a spec package
+/build auth-flow                 # Implement from spec — plan, build, review, close
+/specs                           # Dashboard: spec health across the project
 ```
 
 ### The Lifecycle
 
-1. **Backlog** — features live in `.specs/BACKLOG.md` with priority grades (P0–P3)
-2. **Milestone** — when starting a milestone, pull features from backlog into `.specs/MILESTONES.md`
-3. **Spec** — `/spec-new` creates a spec from the standard template with all requirements tagged `[assumed]`
-4. **Refine** — `/spec-refine` walks through every assumption with the user, converting `[assumed]` → `[user-approved]`. The spec's approval status moves from `draft` → `user-approved`. **No implementation begins until approved.**
-5. **Implement** — build the feature using the spec's acceptance criteria as the definition of done
-6. **Update** — `/spec-update` performs the as-built update: sets status, checks off criteria, adds implementation notes
-7. **Health check** — `/spec-check` audits all specs for staleness, missing sections, unapproved status, and other issues
+1. **Backlog** — feature ideas live in `.specs/BACKLOG.md`
+2. **Spec** — `/spec <feature>` creates a spec package. The AI drafts everything, presents only genuine trade-off decisions to the human, and makes obvious decisions itself.
+3. **Approve** — human reviews decisions + AC completeness in `index.md` (~50-80 lines). Once confirmed, spec is `approved`.
+4. **Build** — `/build <feature>` implements autonomously: plan, build with spec-first testing, self-healing review loop, closure with summary report.
+5. **Review** — human reads the Completion Summary Report, smoke tests, and reviews AI decisions.
+6. **Health check** — `/specs` audits all spec packages for staleness, drafts, and unresolved AI decisions.
 
 ### Approval Workflow
 
-Specs use a two-level approval system:
+Specs use spec-level approval:
 
-- **Requirement-level:** each requirement starts as `[assumed]` (AI hypothesis) and becomes `[user-approved]` after explicit user validation via `/spec-refine`
-- **Spec-level:** the `**Approval:**` field starts as `draft` and becomes `user-approved` when all requirements pass review
+- **`draft`** — not ready for implementation. `/build` rejects it.
+- **`approved`** — human has reviewed decisions and scope. Ready to build.
+
+The AI makes obvious decisions (tagged "Already Decided") and presents genuine trade-offs ("Needs Your Input"). No per-requirement `[assumed]`/`[user-approved]` tagging.
 
 A spec-reminder advisory hook fires at Stop when code was modified but specs weren't updated.
 
-### Skills Reference
+### Commands Reference
 
-| Skill | Purpose |
-|-------|---------|
-| `/spec-init` | Bootstrap `.specs/` directory with MILESTONES and BACKLOG |
-| `/spec-new` | Create a feature spec from the standard template |
-| `/spec-refine` | Validate assumptions and get user approval (required before implementation) |
-| `/spec-update` | As-built update after implementation |
-| `/spec-check` | Audit all specs for health issues |
-| `/spec-build` | Orchestrate full implementation from an approved spec (plan, build, review, close) |
-| `/spec-review` | Standalone deep implementation review against a spec |
-| `/specification-writing` | EARS format templates and acceptance criteria patterns |
+| Command | Purpose |
+|---------|---------|
+| `/spec <feature>` | Create, refine, and approve a spec package |
+| `/spec constitution` | Create or update project-level Constitution |
+| `/build <feature>` | Implement from spec — plan, build, review, close |
+| `/specs` | Dashboard: spec health across the project |
 
 ### Directory Structure
 
 ```
 .specs/
-├── MILESTONES.md      # Milestone tracker linking to feature specs
-├── BACKLOG.md         # Priority-graded feature backlog
-├── auth/              # Domain folder
-│   ├── login-flow.md  # Feature spec
-│   └── oauth.md       # Feature spec
-└── search/            # Domain folder
-    └── full-text.md   # Feature spec
+├── CONSTITUTION.md           # Project-level cross-cutting decisions
+├── BACKLOG.md                # Feature idea parking lot
+├── auth/                     # Domain folder
+│   └── login-flow/           # Spec package (directory)
+│       ├── index.md          # Human-facing entry point
+│       ├── context.md        # AI-facing shared context
+│       └── groups/           # AC groups for parallel build
+│           ├── a-credentials.md
+│           └── b-sessions.md
+└── search/
+    └── full-text/
+        ├── index.md
+        ├── context.md
+        └── groups/
+            └── a-indexing.md
 ```
 
-All specs live in domain subfolders. Specs aim for ~200 lines each; split into separate specs in the domain folder when longer.
+Every spec is a directory package. `index.md` is the human review surface. Everything else is for the AI.
 
 ## Project Manager
 

@@ -124,14 +124,14 @@ A technical writing specialist that creates and maintains README files, API docu
 
 ### documenter
 
-<span class="badge badge--orange">Full</span> <span class="badge badge--blue">Opus</span> <span class="badge badge--purple">documentation-patterns</span> <span class="badge badge--purple">specification-writing</span>
+<span class="badge badge--orange">Full</span> <span class="badge badge--blue">Opus</span> <span class="badge badge--purple">documentation-patterns</span> <span class="badge badge--purple">spec</span> <span class="badge badge--purple">build</span> <span class="badge badge--purple">specs</span>
 
-A documentation and specification lifecycle agent. Handles READMEs, API docs, inline documentation, and architectural guides alongside the full spec workflow — creating, refining, reviewing, and closing specifications. Carries 7 frontloaded skills covering both documentation patterns and all spec operations. Unlike doc-writer, the documenter works directly (no worktree isolation) and owns the spec lifecycle. Never modifies source code logic.
+A documentation and specification lifecycle agent. Handles READMEs, API docs, inline documentation, and architectural guides alongside the full spec workflow — creating, refining, and building from spec packages. Carries 4 frontloaded skills covering documentation patterns and all 3 spec operations. Unlike doc-writer, the documenter works directly (no worktree isolation) and owns the spec lifecycle. Never modifies source code logic.
 
 **When activated:** "Document this module," "write a README," "create a spec and document the feature," specification lifecycle tasks that combine docs and specs.
 
 :::tip[documenter vs doc-writer]
-Use **doc-writer** for pure documentation tasks (READMEs, docstrings, API docs) where worktree isolation is preferred. Use **documenter** when documentation and specification work are interleaved — it has the full spec skill set (spec-new, spec-refine, spec-review, spec-update, spec-check) built in.
+Use **doc-writer** for pure documentation tasks (READMEs, docstrings, API docs) where worktree isolation is preferred. Use **documenter** when documentation and specification work are interleaved — it has the full spec skill set (`/spec`, `/build`, `/specs`) built in.
 :::
 
 ### explorer
@@ -172,7 +172,7 @@ A git history forensics specialist that traces code evolution, finds when bugs w
 
 ### implementer
 
-<span class="badge badge--orange">Full (worktree)</span> <span class="badge badge--blue">Opus</span> <span class="badge badge--purple">refactoring-patterns</span> <span class="badge badge--purple">migration-patterns</span> <span class="badge badge--purple">spec-update</span>
+<span class="badge badge--orange">Full (worktree)</span> <span class="badge badge--blue">Opus</span> <span class="badge badge--purple">refactoring-patterns</span> <span class="badge badge--purple">migration-patterns</span> <span class="badge badge--purple">build</span>
 
 A full-stack implementation agent that handles all code modifications: writing new features, fixing bugs, refactoring existing code, and executing migrations. Runs tests after every edit via a Stop hook to catch regressions immediately. Works in a git worktree so your main branch stays clean. The broadest-scope implementation agent — use the more focused refactorer, migrator, or test-writer when the task is clearly within one domain.
 
@@ -256,9 +256,9 @@ A senior application security engineer that audits codebases for vulnerabilities
 
 ### spec-writer
 
-<span class="badge badge--green">Read-only</span> <span class="badge badge--blue">Opus</span> <span class="badge badge--purple">specification-writing</span>
+<span class="badge badge--green">Read-only</span> <span class="badge badge--blue">Opus</span> <span class="badge badge--purple">spec</span> <span class="badge badge--purple">specs</span>
 
-A requirements engineer that creates structured technical specifications using the EARS (Easy Approach to Requirements Syntax) format for requirements and Given/When/Then patterns for acceptance criteria. Grounds every specification in the actual codebase state — reads existing code, tests, and interfaces before writing requirements.
+A requirements engineer that creates structured spec packages using the EARS (Easy Approach to Requirements Syntax) format for acceptance criteria and Given/When/Then patterns for test clarity. Grounds every specification in the actual codebase state — reads existing code, tests, and interfaces before writing requirements.
 
 **When activated:** "Write a spec for," "define requirements," "create acceptance criteria," specification authoring.
 
@@ -280,14 +280,14 @@ A specialist for configuring the Claude Code terminal statusline. Converts shell
 
 ### tester
 
-<span class="badge badge--orange">Full (worktree)</span> <span class="badge badge--blue">Opus</span> <span class="badge badge--purple">testing</span> <span class="badge badge--purple">spec-update</span>
+<span class="badge badge--orange">Full (worktree)</span> <span class="badge badge--blue">Opus</span> <span class="badge badge--purple">testing</span> <span class="badge badge--purple">build</span>
 
-A test suite creation and verification agent. Analyzes existing code, writes comprehensive tests, and ensures all tests pass before completing via a Stop hook. Supports pytest, Vitest, Jest, Go testing, and Rust test frameworks. Works in a git worktree. Functionally equivalent to test-writer with the addition of the spec-update skill for closing the spec loop after writing tests.
+A test suite creation and verification agent. Analyzes existing code, writes comprehensive tests, and ensures all tests pass before completing via a Stop hook. Supports pytest, Vitest, Jest, Go testing, and Rust test frameworks. Works in a git worktree. Functionally equivalent to test-writer with the addition of the build skill for closing the spec loop after writing tests.
 
 **When activated:** "Write tests for," "add test coverage," "create integration tests," test creation tasks.
 
 :::tip[tester vs test-writer]
-These agents are nearly identical. **tester** includes the spec-update skill for spec-driven workflows. **test-writer** is the built-in replacement agent. Both produce the same quality of tests — use whichever surfaces based on your request.
+These agents are nearly identical. **tester** includes the `/build` skill for spec-driven workflows. **test-writer** is the built-in replacement agent. Both produce the same quality of tests — use whichever surfaces based on your request.
 :::
 
 ### test-writer
@@ -312,20 +312,20 @@ A senior test engineer that analyzes existing code and writes comprehensive test
 | debug-logs | Read-only | Sonnet | -- | -- | debugging |
 | dependency-analyst | Read-only | Haiku | -- | Yes | dependency-management |
 | doc-writer | Full | Opus | Worktree | -- | documentation-patterns  |
-| documenter | Full | Opus | -- | -- | documentation-patterns, specification-writing, spec-new, spec-update, spec-review, spec-refine, spec-check |
+| documenter | Full | Opus | -- | -- | documentation-patterns, spec, build, specs |
 | explorer | Read-only | Haiku | -- | -- | ast-grep-patterns |
 | generalist | Full | Inherited | -- | -- | spec workflow |
 | git-archaeologist | Read-only | Haiku | -- | -- | git-forensics |
-| implementer | Full | Opus | Worktree | -- | refactoring-patterns, migration-patterns, spec-update |
+| implementer | Full | Opus | Worktree | -- | refactoring-patterns, migration-patterns, build |
 | investigator | Read-only | Sonnet | -- | -- | documentation-patterns, git-forensics, performance-profiling, debugging, dependency-management, ast-grep-patterns |
 | migrator | Full | Opus | Worktree | -- | migration-patterns |
 | perf-profiler | Read-only | Sonnet | -- | Yes | performance-profiling |
 | refactorer | Full | Opus | Worktree | -- | refactoring-patterns |
 | researcher | Read-only | Sonnet | -- | -- | documentation-patterns |
 | security-auditor | Read-only | Sonnet | -- | Yes | security-checklist |
-| spec-writer | Read-only | Opus | -- | -- | specification-writing |
+| spec-writer | Read-only | Opus | -- | -- | spec, specs |
 | statusline-config | Full | Sonnet | -- | -- | -- |
-| tester | Full | Opus | Worktree | -- | testing, spec-update |
+| tester | Full | Opus | Worktree | -- | testing, build |
 | test-writer | Full | Opus | Worktree | -- | testing |
 
 ## Access Levels at a Glance

@@ -40,13 +40,13 @@ This rule works in concert with the [Workspace Scope Guard](../plugins/workspace
 
 ### Spec Workflow (`spec-workflow.md`)
 
-Mandates specification-driven development. Every non-trivial feature requires a spec before implementation begins, and every implementation ends with an as-built spec update.
+Mandates specification-driven development using directory-based spec packages. Every non-trivial feature requires a spec before implementation begins, and every implementation ends with automated spec closure.
 
 Key requirements:
-- Use `/spec-new` to create specs from the standard template
-- Use `/spec-update` after implementation to close the loop
-- Specs live in `.specs/` organized by domain folders
-- Run `/spec-check` before starting new milestones
+- Use `/spec` to create, refine, and approve spec packages
+- Use `/build` to implement from spec — includes review and closure
+- Specs live in `.specs/` as directory packages organized by domain
+- Use `/specs` to check spec health across the project
 
 ### Session Search (`session-search.md`)
 

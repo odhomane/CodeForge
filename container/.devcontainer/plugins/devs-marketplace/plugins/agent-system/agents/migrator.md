@@ -19,7 +19,7 @@ memory:
   scope: user
 skills:
   - migration-patterns
-  - spec-update
+  - build
 ---
 
 # Migrator Agent

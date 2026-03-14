@@ -29,3 +29,5 @@ export function resolveNormalized(...segments: string[]): string {
 export function basenameFromPath(filePath: string): string {
 	return basename(normalizePath(filePath));
 }
+
+export { isInsideContainer } from "./context.js";

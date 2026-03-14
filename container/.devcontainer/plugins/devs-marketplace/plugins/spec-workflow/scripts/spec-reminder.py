@@ -4,7 +4,7 @@ Spec reminder — Stop hook that advises about spec updates after code changes.
 
 On Stop, checks if source code was modified but no .specs/ files were updated.
 Injects an advisory reminder as additionalContext pointing the user to
-/spec-update.
+/build or /spec.
 
 Only fires when a .specs/ directory exists (project uses the spec system).
 
@@ -138,10 +138,9 @@ def main():
     message = (
         f"[Spec Reminder] Code was modified in {dirs_str} "
         "but no specs were updated. "
-        "Use /spec-review to verify implementation against the spec, "
-        "then /spec-update to close the loop. "
-        "Use /spec-new if no spec exists for this feature, "
-        "or /spec-refine if the spec is still in draft status."
+        "Use /build <feature> to implement from an approved spec and close the loop. "
+        "Use /spec <feature> if no spec exists yet. "
+        "Use /specs to check overall spec health."
     )
 
     if session_id:

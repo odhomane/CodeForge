@@ -39,7 +39,7 @@ Declared in `settings.json` under `enabledPlugins`, auto-activated on start:
 
 - **agent-system** — 21 custom agents (4 workhorse + 17 specialist) + built-in agent redirection
 - **skill-engine** — 22 general coding skills + auto-suggestion
-- **spec-workflow** — 8 spec lifecycle skills + spec-reminder hook
+- **spec-workflow** — 3 spec lifecycle skills (`/spec`, `/build`, `/specs`) + spec-reminder hook
 - **session-context** — Git state injection, TODO harvesting, commit reminders
 - **auto-code-quality** — Auto-format + auto-lint + advisory test runner
 - **workspace-scope-guard** — Blocks writes outside working directory

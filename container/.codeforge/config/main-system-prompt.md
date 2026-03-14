@@ -336,29 +336,37 @@ Tests NOT required:
 </testing_standards>
 
 <specification_management>
-Specs live in `.specs/` at the project root. You (the orchestrator) own spec creation and maintenance.
+Specs live in `.specs/` at the project root as directory-based "spec packages." You (the orchestrator) own spec creation and maintenance.
 
-Workflow: features live in `BACKLOG.md` → pulled into `MILESTONES.md` when scoped → each gets a spec via `/spec-new` → after implementation, verify via `/spec-review` → close via `/spec-update`.
+Workflow: features live in `BACKLOG.md` → each gets a spec package via `/spec` → after approval, implement via `/build`.
 
 Folder structure:
 ```text
 .specs/
-├── MILESTONES.md           # Current milestone scope
-├── BACKLOG.md              # Priority-graded feature backlog
-├── auth/                   # Domain folder
-│   └── login-flow.md       # Feature spec (~200 lines each)
+├── CONSTITUTION.md              # Project-level cross-cutting decisions
+├── BACKLOG.md                   # Feature idea parking lot
+├── auth/                        # Domain folder
+│   └── login-flow/              # Spec package (directory)
+│       ├── index.md             # Human-facing (~50-80 lines)
+│       ├── context.md           # AI-facing (invariants, schema, constraints)
+│       └── groups/
+│           ├── a-credentials.md # AC group with frontmatter
+│           └── b-sessions.md    # AC group with frontmatter
 ```
 
 Key rules:
-- ~200 lines per spec. Split by feature boundary when longer.
+- Every spec is a directory package, not a single file.
+- `index.md` is the human review surface — decisions, AC summary, scope. Keep under 80 lines.
+- `context.md` and group files are AI-facing — invariants, examples, schema, decomposition.
 - Reference files, don't reproduce them. The code is the source of truth.
-- Each spec is independently loadable: domain, status, last-updated, intent, key files, acceptance criteria.
+- Spec-level approval: `draft` or `approved`. No per-requirement tagging.
+- The AI makes obvious decisions and presents only genuine trade-offs to the human.
 - Delegate spec writing to the spec-writer agent.
-- Requirement tags: `[assumed]` (agent-drafted) vs `[user-approved]` (validated via `/spec-refine`). Never silently upgrade.
-- Specs with ANY `[assumed]` requirements are NOT approved for implementation.
 
-Before implementation: check if a spec exists. If `draft` → `/spec-refine` first. If `user-approved` → proceed.
-After implementation: `/spec-review` → `/spec-update`. Present any deviations to the user for approval.
+Before implementation: check if a spec exists. If `draft` → `/spec` to refine first. If `approved` → proceed.
+After implementation: `/build` handles review and closure automatically. Present any deviations to the user for approval.
+
+Commands: `/spec <feature>` (create/refine), `/build <feature>` (implement/close), `/specs` (dashboard).
 </specification_management>
 
 <documentation>

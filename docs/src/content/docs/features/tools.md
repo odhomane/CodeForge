@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-CodeForge installs 22 tools and utilities in your DevContainer, covering session management, code quality, language runtimes, and development infrastructure. Every tool is on your `PATH` from the first terminal session — no manual installation required.
+CodeForge installs 23 tools and utilities in your DevContainer, covering session management, code quality, language runtimes, and development infrastructure. Every tool is on your `PATH` from the first terminal session — no manual installation required.
 
 ## Session & Claude Tools
 
@@ -150,6 +150,30 @@ cc-tools
 
 This displays a formatted table showing every tool, whether it is installed, and its version number.
 
+### codeforge — CodeForge CLI (Experimental)
+
+:::caution[Experimental]
+The CodeForge CLI is under active development. Commands and interfaces may change between releases.
+:::
+
+Multi-command CLI for development workflows — session search, plugin management, configuration, codebase indexing, and devcontainer management.
+
+```bash
+# Search session history
+codeforge session search "authentication approach"
+
+# List plugins and their status
+codeforge plugin list
+
+# Build a codebase symbol index
+codeforge index build
+
+# Manage devcontainers
+codeforge container ls
+```
+
+When run outside the container, commands auto-proxy into the running devcontainer. Use `--local` to run against the host filesystem.
+
 ## Code Quality Tools
 
 These tools are used both manually and automatically by the [Auto Code Quality Plugin](../plugins/auto-code-quality/) to maintain code standards.
@@ -230,6 +254,7 @@ CodeForge uses `uv` as the default Python package manager. It is significantly f
 | 20 | `tree-sitter` | Intelligence | Syntax tree parsing |
 | 21 | `pyright` | Intelligence | Python LSP server |
 | 22 | `typescript-language-server` | Intelligence | TypeScript/JS LSP server |
+| 23 | `codeforge` | Session | CodeForge CLI — session search, plugins, indexing _(experimental)_ |
 
 ## Related
 

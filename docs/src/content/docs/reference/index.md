@@ -44,12 +44,10 @@ This section is a lookup resource for CodeForge internals. Use it when you need 
 
 | Command | What It Does |
 |---------|-------------|
-| `/spec-new <feature>` | Create a new feature spec |
-| `/spec-refine <feature>` | Validate assumptions, get user approval |
-| `/spec-build <feature>` | Full implementation lifecycle from spec |
-| `/spec-review <feature>` | Verify implementation against spec |
-| `/spec-update` | As-built spec closure |
-| `/spec-check` | Audit spec health |
+| `/spec <feature>` | Create, refine, and approve a spec package |
+| `/spec constitution` | Create or update project-level Constitution |
+| `/build <feature>` | Implement from spec — plan, build, review, close |
+| `/specs` | Dashboard: spec health across the project |
 
 ## Key Configuration Files
 

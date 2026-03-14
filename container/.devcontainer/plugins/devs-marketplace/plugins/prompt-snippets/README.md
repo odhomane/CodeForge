@@ -22,7 +22,7 @@ Type `/ps` followed by a snippet name to inject a behavioral directive for the r
 | `ship` | Commit, push, and create a PR |
 | `deep` | Thorough investigation, leave no stone unturned |
 | `hold` | Do the work but don't commit or push |
-| `recall` | Search session history with ccms for prior context |
+| `recall` | Search session history for prior context |
 | `wait` | When done, stop — no suggestions or follow-ups |
 
 ### Composing

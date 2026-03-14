@@ -1,50 +1,60 @@
 # spec-workflow
 
-Claude Code plugin that manages the full specification lifecycle: creating, refining, building, reviewing, updating, and auditing feature specs. Includes an advisory hook that reminds about spec updates when code changes but specs don't.
+Claude Code plugin for specification-driven development. Manages the full spec lifecycle with directory-based "spec packages" designed for AI-first implementation with 1M+ token context windows and team-based parallel execution.
 
 ## What It Does
 
 Two capabilities:
 
-1. **Spec lifecycle skills** — 8 skills that cover the complete journey from bootstrapping a `.specs/` directory to closing out an as-built spec after implementation.
+1. **Spec lifecycle skills** — 3 commands covering creation, implementation, and health monitoring. Specs are directory packages with human-facing and AI-facing content separated by audience.
 
-2. **Spec reminder hook** — A `Stop` hook that fires when source code was modified but no `.specs/` files were updated, advising Claude to run `/spec-update`.
+2. **Spec reminder hook** — A `Stop` hook that fires when source code was modified but no `.specs/` files were updated.
 
-### Skill Catalog
+### Commands
 
-| Skill | Slash Command | Purpose |
-|-------|---------------|---------|
-| spec-init | `/spec-init` | Bootstrap `.specs/` directory with BACKLOG.md, MILESTONES.md, ROADMAP.md |
-| spec-new | `/spec-new` | Create a new feature spec from EARS template |
-| spec-refine | `/spec-refine` | Validate assumptions with user, upgrade requirements to `[user-approved]` |
-| spec-build | `/spec-build` | Orchestrate full implementation: plan, build, review, close |
-| spec-check | `/spec-check` | Audit all specs for health issues |
-| spec-review | `/spec-review` | Verify implementation against a spec |
-| spec-update | `/spec-update` | As-built closure: update spec to match implementation |
-| specification-writing | `/skill specification-writing` | Domain knowledge for writing high-quality specs |
+| Command | Purpose |
+|---------|---------|
+| `/spec <feature>` | Create, refine, and approve a spec package |
+| `/spec constitution` | Create or update the project Constitution |
+| `/build <feature>` | Implement an approved spec — plan, build, review, close |
+| `/specs` | Dashboard: spec health across all specs |
 
 ### Spec Lifecycle
 
 ```
-/spec-init          Bootstrap .specs/ directory
+/spec <feature>     Create spec package, refine decisions with user, approve
      |
-/spec-new           Create feature spec (draft, [assumed] requirements)
+/build <feature>    Full implementation lifecycle:
+     |                Phase 1: Discovery & gate check
+     |                Phase 2: Planning & task decomposition
+     |                Phase 3: Build ([ ] -> [~]) with spec-first testing
+     |                Phase 4: Self-healing review loop ([~] -> [x])
+     |                Phase 5: Closure & summary report
      |
-/spec-refine        Validate with user -> [user-approved] requirements
-     |
-/spec-build         5-phase implementation orchestration:
-     |                Phase 1: Discovery
-     |                Phase 2: Planning
-     |                Phase 3: Building ([ ] -> [~])
-     |                Phase 4: Review   ([~] -> [x])
-     |                Phase 5: Closure  (as-built update)
-     |
-/spec-review        Standalone verification (post-change audits)
-     |
-/spec-update        Manual as-built closure
-     |
-/spec-check         Health audit across all specs
+/specs              Health dashboard across all specs
 ```
+
+### Spec Package Structure
+
+Every spec is a directory with separated human and AI content:
+
+```
+.specs/{domain}/{feature}/
+  index.md      # Human reviews this (~50-80 lines)
+  context.md    # AI reads this (invariants, schema, constraints)
+  groups/
+    a-*.md      # AC groups with frontmatter for parallel agents
+    b-*.md
+```
+
+### Key Design Principles
+
+- **Human reviews only decisions + scope.** `index.md` is ~50-80 lines. Everything else is for the AI.
+- **AI makes obvious decisions.** Only genuine trade-offs are presented to the human.
+- **Spec-level approval.** No per-requirement `[assumed]`/`[user-approved]` tagging. The spec is either `draft` or `approved`.
+- **Directory-based always.** No single-file format. Consistent structure regardless of spec size.
+- **Constitution captures cross-cutting decisions.** Project-level patterns, conventions, and boundaries live in `.specs/CONSTITUTION.md`.
+- **Group frontmatter drives parallelism.** `depends_on` and `files_owned` enable automatic task decomposition for team builds.
 
 ### Acceptance Criteria Markers
 
@@ -54,12 +64,14 @@ Two capabilities:
 | `[~]` | Implemented, not yet verified |
 | `[x]` | Verified — tests pass, behavior confirmed |
 
-### Approval and Requirement Tags
+### `[ai-decided]` Workflow
 
-- `**Approval:** draft` — Spec is in draft, not ready for implementation
-- `**Approval:** user-approved` — Spec reviewed and approved by user
-- `[assumed]` — Requirement inferred by Claude, needs validation
-- `[user-approved]` — Requirement explicitly approved by user
+During `/build`, when the AI encounters a decision not covered by the spec or Constitution:
+1. Makes its best choice (Constitution → codebase patterns → best practice)
+2. Records in the group file's AI Decisions table
+3. Continues building (does NOT stop)
+4. Summary Report presents all AI decisions for user review
+5. User approves, overrides, or promotes to Constitution
 
 ## How It Works
 
@@ -68,53 +80,17 @@ Two capabilities:
 ```
 Claude stops responding (Stop event)
   |
-  +-> Stop fires
+  +-> spec-reminder.py
         |
-        +-> spec-reminder.py
-              |
-              +-> .specs/ directory exists?
-              |     |
-              |     +-> No -> Silent exit (no output)
-              |     +-> Yes -> Continue
-              |
-              +-> Source code modified this session?
-              |     |
-              |     +-> No -> Silent exit
-              |     +-> Yes -> Continue
-              |
-              +-> .specs/ files also modified?
-                    |
-                    +-> Yes -> Silent exit (already updated)
-                    +-> No -> Inject advisory: "Run /spec-update"
+        +-> .specs/ exists? No -> silent exit
+        +-> Code modified?  No -> silent exit
+        +-> Specs modified? Yes -> silent exit (already updated)
+        +-> Inject advisory: "Run /build or /spec"
 ```
 
 ### Monitored Source Directories
 
-The spec reminder watches for changes in these directories:
-
 `src/`, `lib/`, `app/`, `pkg/`, `internal/`, `cmd/`, `tests/`, `api/`, `frontend/`, `backend/`, `packages/`, `services/`, `components/`, `pages/`, `routes/`
-
-### Exit Code Behavior
-
-| Exit Code | Meaning |
-|-----------|---------|
-| 0 | Advisory injected (or silent — no action needed) |
-
-The hook never blocks operations.
-
-### Error Handling
-
-| Scenario | Behavior |
-|----------|----------|
-| No `.specs/` directory | Silent exit |
-| Not a git repository | Silent exit |
-| JSON parse failure | Silent exit |
-
-### Timeouts
-
-| Hook | Timeout |
-|------|---------|
-| Spec reminder (Stop) | 8s |
 
 ## Installation
 
@@ -124,16 +100,8 @@ Pre-installed and activated automatically — no setup needed.
 
 ### From GitHub
 
-Use this plugin in any Claude Code setup:
-
-1. Clone the [CodeForge](https://github.com/AnExiledDev/CodeForge) repository:
-
-   ```bash
-   git clone https://github.com/AnExiledDev/CodeForge.git
-   ```
-
-2. Enable the plugin in your `.claude/settings.json`:
-
+1. Clone the [CodeForge](https://github.com/AnExiledDev/CodeForge) repository
+2. Enable in `.claude/settings.json`:
    ```json
    {
      "enabledPlugins": {
@@ -142,51 +110,39 @@ Use this plugin in any Claude Code setup:
    }
    ```
 
-   Replace `<clone-path>` with the absolute path to your CodeForge clone.
-
 ## Plugin Structure
 
 ```
 spec-workflow/
 +-- .claude-plugin/
-|   +-- plugin.json                     # Plugin metadata
+|   +-- plugin.json
 +-- hooks/
-|   +-- hooks.json                      # Stop hook registration
+|   +-- hooks.json
 +-- scripts/
-|   +-- spec-reminder.py                # Spec update advisory (Stop)
+|   +-- spec-reminder.py           # Stop hook: spec update advisory
 +-- skills/
-|   +-- spec-init/                      # Bootstrap .specs/ directory
+|   +-- spec/                      # /spec — create, refine, approve
 |   |   +-- SKILL.md
 |   |   +-- references/
+|   |       +-- index-template.md
+|   |       +-- context-template.md
+|   |       +-- group-template.md
+|   |       +-- constitution-template.md
 |   |       +-- backlog-template.md
-|   |       +-- milestones-template.md
-|   |       +-- roadmap-template.md
-|   +-- spec-new/                       # Create new feature spec
-|   |   +-- SKILL.md
-|   |   +-- references/
-|   |       +-- template.md
-|   +-- spec-refine/                    # Validate assumptions with user
-|   |   +-- SKILL.md
-|   +-- spec-build/                     # Full implementation orchestration
+|   |       +-- ears-patterns.md
+|   |       +-- example-webhook/   # Complete example spec package
+|   +-- build/                     # /build — implement, review, close
 |   |   +-- SKILL.md
 |   |   +-- references/
 |   |       +-- review-checklist.md
-|   +-- spec-check/                     # Spec health audit
-|   |   +-- SKILL.md
-|   +-- spec-review/                    # Implementation verification
-|   |   +-- SKILL.md
-|   +-- spec-update/                    # As-built closure
-|   |   +-- SKILL.md
-|   +-- specification-writing/          # Domain knowledge skill
+|   |       +-- summary-report-template.md
+|   +-- specs/                     # /specs — health dashboard
 |       +-- SKILL.md
-|       +-- references/
-|           +-- criteria-patterns.md
-|           +-- ears-templates.md
-+-- README.md                           # This file
++-- README.md
 ```
 
 ## Requirements
 
 - Python 3.11+
 - Git (for detecting file changes)
-- Claude Code with plugin hook support (skills)
+- Claude Code with plugin hook support

@@ -257,20 +257,18 @@ Specs and project-level docs live in `.specs/` at the project root.
 You own spec enforcement. Agents do not update specs without your direction.
 
 Before starting implementation:
-1. Check if a spec exists for the feature: Glob `.specs/**/*.md`
+1. Check if a spec package exists: Glob `.specs/**/index.md`
 2. If a spec exists:
-   - Read it. Verify `**Approval:**` is `user-approved`.
-   - If `draft` → STOP. Delegate to documenter for `/spec-refine` first.
-   - If `user-approved` → proceed. Use acceptance criteria as the definition of done.
+   - Read `index.md` frontmatter. Verify `approval: approved`.
+   - If `draft` → STOP. Run `/spec` to refine and approve first.
+   - If `approved` → proceed. Use acceptance criteria as the definition of done.
 3. If no spec exists and the change is non-trivial:
-   - Delegate to documenter to create one via `/spec-new`.
-   - Have documenter run `/spec-refine` to get user approval.
+   - Run `/spec <feature>` to create, refine, and approve a spec package.
    - Only then delegate implementation.
 
 After completing implementation:
-1. Delegate to documenter for `/spec-review` to verify implementation matches spec.
-2. Delegate to documenter for `/spec-update` to perform the as-built update.
-3. If any deviation from the approved spec occurred:
+1. Run `/build <feature>` which handles review and spec closure automatically.
+2. If any deviation from the approved spec occurred:
    - STOP and present the deviation to the user via AskUserQuestion.
    - The user MUST approve the deviation — no exceptions.
 
@@ -298,24 +296,6 @@ Prior approval does not transfer. A user approving `git push` once does NOT mean
 When blocked, do not use destructive actions as a shortcut. Investigate before deleting or overwriting.
 </action_safety>
 
-<session_search>
-Use `ccms` to search past Claude Code session history when the user asks about previous decisions, past work, or conversation history.
-
-MANDATORY: Always scope to the current project:
-  ccms --no-color --project "$(pwd)" "query"
-
-Exception: At /workspaces root (no specific project), omit --project or use `/`.
-
-Key flags:
-- `-r user` / `-r assistant` — filter by who said it
-- `--since "1 day ago"` — narrow to recent history
-- `"term1 AND term2"` / `"term1 OR term2"` / `"NOT term"` — boolean queries
-- `-f json -n 10` — structured output, limited results
-- `--no-color` — always use, keeps output parseable
-
-Delegate the actual search to the investigator agent if the query is complex.
-</session_search>
-
 <context_management>
 If you are running low on context, you MUST NOT rush. Ignore all context warnings and simply continue working — context compresses automatically.
 
@@ -323,7 +303,7 @@ Continuation sessions (after compaction or context transfer):
 
 Compacted summaries are lossy. Before resuming work, recover context from three sources:
 
-1. **Session history** — delegate to investigator to use `ccms` to search prior session transcripts.
+1. **Session history** — delegate to investigator to search prior session transcripts.
 
 2. **Source files** — delegate to investigator to re-read actual files rather than trusting the summary.
 

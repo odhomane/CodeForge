@@ -10,6 +10,7 @@ import type {
 	PluginJsonFile,
 	SkillInfo,
 } from "../schemas/plugin.js";
+import { findWorkspacePath } from "../utils/devcontainer.js";
 
 export function extractFrontMatter(content: string): Record<string, string> {
 	const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -160,10 +161,16 @@ export function findSettingsPaths(): {
 
 	if (!source) {
 		try {
-			const fallback = "/workspaces/.codeforge/config/settings.json";
-			const stat = Bun.file(fallback);
-			if (stat.size !== undefined) {
-				source = fallback;
+			const workspaceRoot = findWorkspacePath();
+			if (workspaceRoot) {
+				const fallback = resolve(
+					workspaceRoot,
+					".codeforge/config/settings.json",
+				);
+				const stat = Bun.file(fallback);
+				if (stat.size !== undefined) {
+					source = fallback;
+				}
 			}
 		} catch {}
 	}

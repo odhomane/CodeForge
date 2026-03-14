@@ -17,7 +17,7 @@ memory:
 skills:
   - refactoring-patterns
   - migration-patterns
-  - spec-update
+  - build
 hooks:
   Stop:
     - type: command

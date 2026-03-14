@@ -187,11 +187,11 @@ Git history analysis techniques for tracing code evolution and investigating cha
 
 **Auto-suggested when:** You mention git history, git blame, bisect, "when was this changed," or code archaeology.
 
-### specification-writing
+### spec (spec-workflow plugin)
 
-EARS format specification authoring for structured technical requirements. Covers the five requirement types (ubiquitous, event-driven, state-driven, optional, unwanted) and Given/When/Then acceptance criteria patterns.
+Spec package creation and refinement. Creates directory-based spec packages with EARS acceptance criteria, decision tables, invariants, and parallel decomposition groups. Includes EARS patterns reference, constitution template, and a complete example spec package.
 
-**Key topics:** EARS requirement syntax, Given/When/Then acceptance criteria, requirement traceability, spec organization in `.specs/` directories, approval workflow (draft to approved).
+**Key topics:** EARS requirement syntax, Given/When/Then acceptance criteria, spec package structure (`index.md`, `context.md`, `groups/`), Constitution, AI decision workflow.
 
 **Auto-suggested when:** You mention writing specs, defining requirements, acceptance criteria, or EARS format.
 
@@ -225,7 +225,7 @@ Git worktree creation, management, and cleanup for parallel development workflow
 |----------|--------|-------|
 | **Frameworks** | fastapi, svelte5, pydantic-ai, docker, docker-py, sqlite | Framework-specific patterns and APIs |
 | **Practices** | testing, debugging, refactoring-patterns, security-checklist, api-design, documentation-patterns, performance-profiling, dependency-management, migration-patterns | Methodologies and established patterns |
-| **Claude & CodeForge** | claude-code-headless, claude-agent-sdk, skill-building, git-forensics, specification-writing, ast-grep-patterns, team, worktree | Building on and extending the Claude ecosystem |
+| **Claude & CodeForge** | claude-code-headless, claude-agent-sdk, skill-building, git-forensics, ast-grep-patterns, team, worktree | Building on and extending the Claude ecosystem |
 
 :::note[Skills vs Agents]
 Skills and agents serve different purposes. An **agent** is a specialized Claude instance with specific tools and constraints — it *does work*. A **skill** is a knowledge pack that *informs work* — it provides the patterns, best practices, and domain knowledge that make an agent (or the main Claude session) more effective. Many agents have associated skills that load automatically when the agent is spawned.
@@ -235,4 +235,4 @@ Skills and agents serve different purposes. An **agent** is a specialized Claude
 
 - [Skill Engine Plugin](../plugins/skill-engine/) — how the skill engine works
 - [Agents](./agents/) — agents that leverage skills
-- [Spec Workflow](../plugins/spec-workflow/) — the specification-writing skill in action
+- [Spec Workflow](../plugins/spec-workflow/) — the spec lifecycle skills (`/spec`, `/build`, `/specs`)
