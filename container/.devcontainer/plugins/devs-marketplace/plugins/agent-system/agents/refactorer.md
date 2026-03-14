@@ -19,7 +19,7 @@ memory:
   scope: project
 skills:
   - refactoring-patterns
-  - spec-update
+  - build
 hooks:
   PostToolUse:
     - matcher: Edit

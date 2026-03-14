@@ -52,6 +52,7 @@ container/.devcontainer/.codeforge-preserve
 # CLI-specific
 cli/.pytest_cache/
 cli/.ruff_cache/
+.codeforge/data/
 
 # Docs-specific
 docs/.astro/

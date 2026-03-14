@@ -18,9 +18,14 @@
 		"build": "bun build src/index.ts --outfile dist/codeforge.js --target bun",
 		"dev": "bun run src/index.ts",
 		"test": "bun test",
+		"build:binary": "bun build --compile src/index.ts --outfile dist/codeforge",
+		"build:binary:linux": "bun build --compile src/index.ts --outfile dist/codeforge-linux-x64 --target bun-linux-x64",
+		"build:binary:darwin": "bun build --compile src/index.ts --outfile dist/codeforge-darwin-arm64 --target bun-darwin-arm64",
+		"build:binary:darwin-x64": "bun build --compile src/index.ts --outfile dist/codeforge-darwin-x64 --target bun-darwin-x64",
 		"prepublishOnly": "bun run build && bun test"
 	},
 	"dependencies": {
+		"@devcontainers/cli": "^0.71.0",
 		"commander": "^13.0.0",
 		"chalk": "^5.4.0"
 	},

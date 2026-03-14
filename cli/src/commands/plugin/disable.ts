@@ -1,6 +1,9 @@
 import chalk from "chalk";
 import type { Command } from "commander";
-import { loadInstalledPlugins } from "../../loaders/plugin-loader.js";
+import {
+	findSettingsPaths,
+	loadInstalledPlugins,
+} from "../../loaders/plugin-loader.js";
 import { setPluginEnabled } from "../../loaders/settings-writer.js";
 
 interface PluginDisableOptions {
@@ -28,6 +31,7 @@ export function registerPluginDisableCommand(parent: Command): void {
 					process.exit(1);
 				}
 
+				const paths = findSettingsPaths();
 				const result = await setPluginEnabled(plugin.qualifiedName, false);
 
 				console.log(`${chalk.red("✓")} Disabled ${plugin.qualifiedName}`);
@@ -35,7 +39,7 @@ export function registerPluginDisableCommand(parent: Command): void {
 					console.log("  Updated: ~/.claude/settings.json");
 				}
 				if (result.source) {
-					console.log("  Updated: /workspaces/.codeforge/config/settings.json");
+					console.log(`  Updated: ${paths.source}`);
 				} else {
 					console.log("  Source settings.json not found — deployed copy only");
 				}

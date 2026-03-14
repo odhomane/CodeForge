@@ -19,11 +19,9 @@ permissionMode: default
 memory:
   scope: project
 skills:
-  - spec-new
-  - spec-update
-  - spec-check
-  - spec-init
-  - spec-review
+  - spec
+  - build
+  - specs
 ---
 
 # Generalist Agent

@@ -104,7 +104,7 @@ cc-tools() {
   printf "  %-20s %s\n" "COMMAND" "STATUS"
   echo "  ────────────────────────────────────"
   for cmd in claude cc ccw ccraw cc-orc codeforge ccusage ccburn claude-monitor \\
-             ccms ct cargo ruff biome dprint shfmt shellcheck hadolint \\
+             ct cargo ruff biome dprint shfmt shellcheck hadolint \\
              ast-grep tree-sitter pyright typescript-language-server \\
              agent-browser gh docker git jq tmux bun go infocmp; do
     if command -v "\$cmd" >/dev/null 2>&1; then

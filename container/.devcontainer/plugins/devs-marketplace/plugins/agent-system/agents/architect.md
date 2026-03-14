@@ -17,10 +17,8 @@ memory:
   scope: project
 skills:
   - api-design
-  - spec-new
-  - spec-update
-  - spec-init
-  - spec-review
+  - spec
+  - specs
 hooks:
   PreToolUse:
     - matcher: Bash

@@ -49,6 +49,37 @@ def resolve_scope_root(cwd: str) -> str:
     return cwd
 
 
+def get_stable_scope_root(session_id: str | None) -> str:
+    """Return the persisted scope root, computing and caching on first call.
+
+    Shares the same temp file as guard-workspace-scope.py so both scripts
+    agree on the scope root for a given session.
+    """
+    tmp_path = f"/tmp/claude-scope-root-{session_id}" if session_id else None
+
+    if tmp_path:
+        try:
+            with open(tmp_path, "r") as f:
+                cached = f.read().strip()
+            if cached:
+                return cached
+        except FileNotFoundError:
+            pass
+
+    # First invocation (or no session_id): compute from actual CWD
+    cwd = os.path.realpath(os.getcwd())
+    scope_root = resolve_scope_root(cwd)
+
+    if tmp_path:
+        try:
+            with open(tmp_path, "w") as f:
+                f.write(scope_root)
+        except OSError:
+            pass  # Best-effort; fall back to computed value
+
+    return scope_root
+
+
 def main():
     cwd = os.path.realpath(os.getcwd())
     try:
@@ -56,13 +87,15 @@ def main():
         # Some hook events provide cwd override
         cwd = os.path.realpath(input_data.get("cwd", cwd))
         hook_event = input_data.get("hook_event_name", "PreToolUse")
+        session_id = input_data.get("session_id")
     except (json.JSONDecodeError, ValueError):
         hook_event = "PreToolUse"
+        session_id = None
 
-    scope_root = resolve_scope_root(cwd)
+    scope_root = get_stable_scope_root(session_id)
 
     context = (
-        f"Working Directory: {cwd} — restrict all file operations to this directory unless explicitly instructed otherwise.\n"
+        f"Working Directory: {scope_root} — restrict all file operations to this directory unless explicitly instructed otherwise.\n"
         f"All file operations and commands MUST target paths within {scope_root}. "
         f"Do not read, write, or execute commands against paths outside this directory."
     )

@@ -1,14 +1,18 @@
 # CodeForge CLI (codeforge-cli)
 
-Installs the [CodeForge CLI](https://github.com/AnExiledDev/CodeForge/tree/main/cli) globally via npm. Provides the `codeforge` command for code review, session search, plugin management, and configuration.
+> **Warning: Experimental** — The CodeForge CLI is under active development. Commands and interfaces may change between releases.
 
-Requires Node.js (for npm install) and Bun (runtime for the CLI binary).
+Installs a self-bootstrapping wrapper for the [CodeForge CLI](https://github.com/AnExiledDev/CodeForge/tree/main/cli). The `codeforge` command runs directly from workspace source (`/workspaces/cli`) — no npm publish required.
+
+On first invocation the wrapper auto-runs `bun install` if `node_modules/` is missing, then execs `bun src/index.ts` with all arguments forwarded.
+
+Requires Bun (declared as an `installsAfter` dependency).
 
 ## Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `version` | string | `latest` | Version to install. Use a specific semver or `'none'` to skip. |
+| `version` | string | `latest` | Use `'none'` to skip installation entirely. |
 
 ## Usage
 

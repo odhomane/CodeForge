@@ -101,13 +101,10 @@ Slash commands for specification-driven development. These are used within Claud
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/spec-init` | Bootstrap the `.specs/` directory with templates | `/spec-init` |
-| `/spec-new <feature>` | Create a new feature specification from the standard template | `/spec-new user-signup` |
-| `/spec-refine <feature>` | Validate assumptions, get user approval before implementation | `/spec-refine user-signup` |
-| `/spec-build <feature>` | Orchestrate full implementation: plan, build, review, and close | `/spec-build user-signup` |
-| `/spec-review <feature>` | Verify implementation against spec requirements | `/spec-review user-signup` |
-| `/spec-update` | As-built spec closure after implementation | `/spec-update` |
-| `/spec-check` | Audit spec health -- find stale, incomplete, or unapproved specs | `/spec-check` |
+| `/spec <feature>` | Create, refine, and approve a spec package | `/spec user-signup` |
+| `/spec constitution` | Create or update the project Constitution | `/spec constitution` |
+| `/build <feature>` | Implement from spec — plan, build, review, and close | `/build user-signup` |
+| `/specs` | Dashboard: spec health across the project | `/specs` |
 
 ## Ticket Workflow Slash Commands
 
@@ -146,6 +143,24 @@ Standalone slash commands for git operations within Claude Code sessions. These 
 4. Presents findings — user selects what to include in review, create as issues, or ignore
 5. Posts review comment to PR (never approves or merges)
 
+## CodeForge CLI Commands (Experimental)
+
+:::caution[Experimental]
+The `codeforge` CLI is under active development. Commands and interfaces may change between releases.
+:::
+
+The `codeforge` command provides development workflow tools. When run outside the container, commands auto-proxy into the running devcontainer. Use `--local` to bypass proxying.
+
+| Command Group | Subcommands | Description |
+|---------------|-------------|-------------|
+| `codeforge session` | `search`, `list`, `show` | Search and browse Claude Code session history |
+| `codeforge task` | `search` | Search tasks |
+| `codeforge plan` | `search` | Search plans |
+| `codeforge plugin` | `list`, `show`, `enable`, `disable`, `hooks`, `agents`, `skills` | Manage Claude Code plugins |
+| `codeforge config` | `show`, `apply` | View and deploy configuration |
+| `codeforge index` | `build`, `search`, `show`, `stats`, `tree`, `clean` | Build and search a codebase symbol index |
+| `codeforge container` | `up`, `down`, `rebuild`, `exec`, `ls`, `shell` | Manage CodeForge devcontainers |
+
 ## GitHub CLI
 
 The GitHub CLI (`gh`) is pre-installed for repository operations.
@@ -181,7 +196,8 @@ Commands come from different sources in the CodeForge setup:
 | Shell aliases | `cc`, `claude`, `ccw`, `ccraw`, `cc-orc`, `check-setup` | `setup-aliases.sh` writes to `.bashrc`/`.zshrc` |
 | Shell functions | `cc-tools` | `setup-aliases.sh` writes to `.bashrc`/`.zshrc` |
 | DevContainer features | `ccusage`, `ccburn`, `ruff`, `biome`, `sg`, `dbr`, etc. | `install.sh` in each feature directory |
-| Slash commands | `/spec-new`, `/ticket:new`, `/ship`, `/pr:review`, `/ps`, etc. | Skill SKILL.md files in plugin directories |
+| CodeForge CLI | `codeforge session`, `codeforge index`, `codeforge container`, etc. | `codeforge-cli` devcontainer feature |
+| Slash commands | `/spec`, `/build`, `/ticket:new`, `/ship`, `/pr:review`, `/ps`, etc. | Skill SKILL.md files in plugin directories |
 | External features | `gh`, `docker`, `node`, `bun` | Installed via `devcontainer.json` features |
 
 :::tip[Listing All Tools]

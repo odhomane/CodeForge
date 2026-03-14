@@ -184,6 +184,37 @@ def resolve_scope_root(cwd: str) -> str:
     return cwd
 
 
+def get_stable_scope_root(session_id: str | None) -> str:
+    """Return the persisted scope root, computing and caching on first call.
+
+    Uses a session-scoped temp file so the scope root survives CWD drift
+    caused by Bash ``cd`` commands within the session.
+    """
+    tmp_path = f"/tmp/claude-scope-root-{session_id}" if session_id else None
+
+    if tmp_path:
+        try:
+            with open(tmp_path, "r") as f:
+                cached = f.read().strip()
+            if cached:
+                return cached
+        except FileNotFoundError:
+            pass
+
+    # First invocation (or no session_id): compute from actual CWD
+    cwd = os.path.realpath(os.getcwd())
+    scope_root = resolve_scope_root(cwd)
+
+    if tmp_path:
+        try:
+            with open(tmp_path, "w") as f:
+                f.write(scope_root)
+        except OSError:
+            pass  # Best-effort; fall back to computed value
+
+    return scope_root
+
+
 def get_target_path(tool_name: str, tool_input: dict) -> str | None:
     """Extract the target path from tool input.
 
@@ -321,6 +352,8 @@ def check_bash_scope(command: str, cwd: str) -> None:
 
         if not skip_layer1:
             for target, resolved in resolved_targets:
+                if any(resolved.startswith(sp) for sp in SYSTEM_PATH_PREFIXES):
+                    continue
                 if not is_in_scope(resolved, cwd) and not is_allowlisted(resolved):
                     detail = f" (resolved: {resolved})" if resolved != target else ""
                     print(
@@ -353,11 +386,10 @@ def main():
         input_data = json.load(sys.stdin)
         tool_name = input_data.get("tool_name", "")
         tool_input = input_data.get("tool_input", {})
+        session_id = input_data.get("session_id")
 
-        # Resolve CWD with realpath for consistent comparison with resolved targets
-        cwd = os.path.realpath(os.getcwd())
-        # Expand scope to project root when running inside a worktree
-        scope_root = resolve_scope_root(cwd)
+        # Use persisted scope root to prevent CWD drift from Bash cd
+        scope_root = get_stable_scope_root(session_id)
 
         # --- Bash tool: separate code path ---
         if tool_name == "Bash":
@@ -404,11 +436,7 @@ def main():
 
         # Out of scope — BLOCK for ALL tools
         detail = f" (resolved: {resolved})" if resolved != target_path else ""
-        scope_info = (
-            f"scope root ({scope_root})"
-            if scope_root != cwd
-            else f"working directory ({scope_root})"
-        )
+        scope_info = f"scope root ({scope_root})"
         print(
             f"Blocked: {tool_name} targets '{target_path}'{detail} which is outside "
             f"the {scope_info}. Move to that project's directory "

@@ -47,6 +47,39 @@ For minor and patch updates, you can usually just rebuild the container. Check t
 
 ## Version History
 
+## v2.1.1 — 2026-03-13
+
+### Workspace Scope Guard
+
+- Fix `/dev/null` false positive — redirects to system paths (`/dev/`, `/proc/`, `/sys/`, etc.) are now allowed regardless of the primary command, not just for system commands like `git` or `pip`
+- Fix CWD drift — scope root is now persisted on first invocation per session, preventing `cd` commands in Bash from silently changing the enforced scope boundary
+- CWD context injector now uses the same persisted scope root, keeping advisory context aligned with enforcement
+
+## v2.1.0 — 2026-03-13
+
+### Spec Workflow v2 — "Spec Packages"
+
+- **Breaking:** Replaced all 8 spec commands with 3: `/spec` (create & refine), `/build` (implement & close), `/specs` (dashboard)
+- Specs are now directory-based "spec packages" with separated human and AI content:
+  - `index.md` — human-facing entry point (~50-80 lines): intent, decisions, AC summary, scope
+  - `context.md` — AI-facing shared context: invariants, anti-patterns, schema intent, constraints
+  - `groups/*.md` — AC groups with YAML frontmatter for parallel agent decomposition
+- Added Constitution support (`.specs/CONSTITUTION.md`) for project-level cross-cutting decisions
+- Simplified approval model: spec-level `draft`/`approved` replaces per-requirement `[assumed]`/`[user-approved]` tagging
+- AI makes obvious decisions autonomously, presents only genuine trade-offs to the human
+- `[ai-decided]` workflow: AI records autonomous decisions during build for post-completion review
+- Group frontmatter (`depends_on`, `files_owned`) drives automatic task decomposition for team builds
+- Dropped MILESTONES.md and ROADMAP.md — replaced with simple BACKLOG.md idea parking lot
+- Updated all 8 agent skill lists, system prompts, orchestrator prompt, skill-suggester, and 8 docs pages
+- Ships with a complete example spec package (webhook delivery system) as reference
+
+### CLI v0.1.0 (Experimental)
+
+- Initial release of the `codeforge` CLI — session search, plugin management, config deployment, codebase indexing, and devcontainer management
+- New `codeforge index` command group — build and search a codebase symbol index (build, search, show, stats, tree, clean)
+- New `codeforge container` command group — manage devcontainers from the host (up, down, rebuild, exec, ls, shell)
+- Container proxy — CLI commands auto-proxy into the running devcontainer when run from the host
+
 ## v2.0.3 — 2026-03-03
 
 ### Workspace Scope Guard

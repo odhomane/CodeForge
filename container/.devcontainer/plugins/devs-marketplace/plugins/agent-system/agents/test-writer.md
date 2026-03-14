@@ -19,7 +19,7 @@ memory:
   scope: project
 skills:
   - testing
-  - spec-update
+  - build
 hooks:
   Stop:
     - type: command

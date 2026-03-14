@@ -11,31 +11,34 @@ if [ "${VERSION}" = "none" ]; then
     exit 0
 fi
 
-echo "[codeforge-cli] Starting installation..."
-echo "[codeforge-cli] Version: ${VERSION}"
+echo "[codeforge-cli] Installing self-bootstrapping wrapper..."
 
-# Source NVM if available
-if [ -f /usr/local/share/nvm/nvm.sh ]; then
-    set +u
-    source /usr/local/share/nvm/nvm.sh
-    set -u
-fi
+# Write the wrapper script that runs the CLI from workspace source.
+# The workspace is not mounted during feature install (Docker build),
+# so the wrapper defers bun install to first invocation.
+cat > /usr/local/bin/codeforge <<'WRAPPER'
+#!/bin/bash
+set -euo pipefail
 
-# Validate npm is available
-if ! command -v npm &>/dev/null; then
-    echo "[codeforge-cli] ERROR: npm not found. Ensure Node.js is installed." >&2
+CLI_DIR="${WORKSPACE_ROOT:-/workspaces}/cli"
+BUN="${BUN:-$(command -v bun 2>/dev/null || echo "$HOME/.bun/bin/bun")}"
+
+if [ ! -d "$CLI_DIR" ]; then
+    echo "codeforge: CLI source not found at $CLI_DIR" >&2
+    echo "Ensure the workspace is mounted and contains the cli/ directory." >&2
     exit 1
 fi
 
-# Install CodeForge CLI globally via npm
-if [ "${VERSION}" = "latest" ]; then
-    npm install -g codeforge-dev-cli
-else
-    npm install -g "codeforge-dev-cli@${VERSION}"
+if [ ! -d "$CLI_DIR/node_modules" ]; then
+    echo "codeforge: bootstrapping dependencies..." >&2
+    "$BUN" install --cwd "$CLI_DIR" --frozen-lockfile >/dev/null 2>&1 || \
+    "$BUN" install --cwd "$CLI_DIR" >/dev/null 2>&1
 fi
-npm cache clean --force 2>/dev/null || true
 
-# Verify installation
-codeforge --version
+exec "$BUN" "$CLI_DIR/src/index.ts" "$@"
+WRAPPER
 
-echo "[codeforge-cli] Installation complete"
+chmod +x /usr/local/bin/codeforge
+
+echo "[codeforge-cli] Wrapper installed at /usr/local/bin/codeforge"
+echo "[codeforge-cli] CLI will bootstrap from workspace source on first use"

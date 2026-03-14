@@ -20,12 +20,9 @@ memory:
   scope: project
 skills:
   - documentation-patterns
-  - specification-writing
-  - spec-new
-  - spec-update
-  - spec-review
-  - spec-refine
-  - spec-check
+  - spec
+  - build
+  - specs
 ---
 
 # Documenter Agent
@@ -287,19 +284,11 @@ Use text-based diagrams when helpful (Mermaid syntax preferred). Keep diagrams s
 
 ### Spec Lifecycle Operations
 
-**Create** (`/spec-new`): Build a new spec from the template. Set status to `planned`, approval to `draft`, all requirements `[assumed]`.
+**Create & Refine** (`/spec`): Create a spec package, refine decisions with the human, and approve. AI makes obvious decisions, presents genuine trade-offs. Auto-bootstraps `.specs/` on first use.
 
-**Refine** (`/spec-refine`): Walk through assumptions with the user. Upgrade validated requirements from `[assumed]` to `[user-approved]`. Set approval to `user-approved` when all requirements are validated.
+**Build & Close** (`/build`): Implement from an approved spec. Plan, build with spec-first testing, self-healing review loop, and spec closure. Phase 3 flips `[ ]` to `[~]`. Phase 4 upgrades `[~]` to `[x]` after verification.
 
-**Build** (`/spec-build`): Orchestrate implementation from an approved spec. Phase 3 flips `[ ]` to `[~]`. Phase 4 upgrades `[~]` to `[x]` after verification.
-
-**Review** (`/spec-review`): Verify implementation matches spec. Read code, verify requirements, check acceptance criteria.
-
-**Update** (`/spec-update`): As-built closure. Set status to `implemented` or `partial`. Check off verified criteria. Add Implementation Notes for deviations. Update file paths.
-
-**Check** (`/spec-check`): Audit spec health across the project. Find stale, incomplete, or missing specs.
-
-**Init** (`/spec-init`): Bootstrap `.specs/` for a new project.
+**Dashboard** (`/specs`): Audit spec health across the project. Find stale, incomplete, draft, or unresolved specs.
 
 ### As-Built Workflow
 

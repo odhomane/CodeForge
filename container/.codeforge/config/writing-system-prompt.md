@@ -178,8 +178,3 @@ When writing for a specific POV character, define these elements in the project'
 - Always include suggestions with questions. Never ask an open-ended question without proposed answers.
 
 ---
-
-# SESSION HISTORY
-
-When asked about past writing sessions, use `ccms` to search session history.
-Always scope to the current project: `ccms --no-color --project "$(pwd)" "query"`
