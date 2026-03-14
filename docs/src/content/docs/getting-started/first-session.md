@@ -72,10 +72,10 @@ The **test writer agent** generates tests that follow your project's existing pa
 ### Start a Feature with a Spec
 
 ```
-/spec-new
+/spec my-feature
 ```
 
-This skill walks you through creating a feature specification. Specs bring structure to development — you define what you're building before writing code. See the [Spec Workflow plugin](../plugins/spec-workflow/) for the full lifecycle.
+This skill creates a spec package for your feature — the AI drafts everything, presents decisions that need your input, and gets your approval. See the [Spec Workflow plugin](../plugins/spec-workflow/) for the full lifecycle.
 
 ### Check Your Tools
 
@@ -100,7 +100,7 @@ claude-dashboard
 CodeForge includes **21 specialized agents** and **38 skills** that activate automatically based on what you're working on. You don't need to memorize names — just describe what you want, and Claude delegates to the right specialist. The examples in "What to Try First" above show this in action.
 
 - **[Agents](../features/agents/)** — specialized AI personas for architecture, debugging, testing, security, migrations, and more
-- **[Skills](../features/skills/)** — domain-specific knowledge packs (FastAPI, Docker, Svelte, debugging patterns, etc.) that the skill engine suggests automatically or you invoke with slash commands like `/spec-new`
+- **[Skills](../features/skills/)** — domain-specific knowledge packs (FastAPI, Docker, Svelte, debugging patterns, etc.) that the skill engine suggests automatically or you invoke with slash commands like `/spec`
 
 ## Understanding the Status Line
 
@@ -115,7 +115,7 @@ Instead of "fix the bug," try "the login endpoint returns 500 when the email fie
 :::
 
 :::tip[Use the spec workflow for features]
-For anything beyond a simple bug fix, start with `/spec-new`. Writing a spec first helps Claude (and you) think through the design before writing code. The spec becomes a living document that tracks what was built and why.
+For anything beyond a simple bug fix, start with `/spec`. Writing a spec first helps Claude (and you) think through the design before writing code. The spec becomes a living document that tracks what was built and why.
 :::
 
 :::tip[Let agents do their thing]

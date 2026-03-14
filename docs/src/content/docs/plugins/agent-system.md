@@ -122,7 +122,7 @@ These agents investigate, analyze, and report — they never modify files.
 | **git-archaeologist** | Git history analysis, blame, bisect, forensics | Haiku | git-forensics |
 | **perf-profiler** | Performance profiling, bottleneck identification | Sonnet | performance-profiling |
 | **security-auditor** | Security audit, vulnerability assessment, OWASP checks | Sonnet | security-checklist |
-| **spec-writer** | Specification authoring and refinement | Opus | specification-writing |
+| **spec-writer** | Specification authoring and refinement | Opus | spec, specs |
 
 ### Full-Access Agents
 
@@ -172,7 +172,7 @@ model: opus
 permissionMode: plan
 skills:
   - api-design
-  - spec-new
+  - spec
 hooks:
   PreToolUse:
     - matcher: Bash

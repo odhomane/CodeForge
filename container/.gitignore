@@ -1,0 +1,20 @@
+# Container-specific .gitignore
+# Shared patterns (node_modules, dist, .env, etc.) are in the root .gitignore
+
+# Claude Code directory (user-specific)
+.claude/
+
+# All hidden directories except devcontainer and codeforge
+.*
+!.devcontainer/
+!.devcontainer/**/.claude-plugin/
+!.codeforge/
+!.gitignore
+!.npmignore
+
+# .codeforge per-installation state (not tracked)
+.codeforge/.checksums/
+.codeforge/.markers/
+
+# DevContainer build cache
+.devcontainer/.dockercache/

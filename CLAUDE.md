@@ -1,8 +1,14 @@
-# CodeForge
+# CodeForge Monorepo
 
-DevContainer configuration project for AI-assisted development with Claude Code.
+This repository contains three packages. Each package manages its own dependencies independently.
 
-See `.devcontainer/CLAUDE.md` for full devcontainer documentation.
+## Packages
+
+| Package | Runtime | Package Manager |
+|---------|---------|-----------------|
+| `container/` | Node.js | npm |
+| `cli/` | Bun | bun |
+| `docs/` | Node.js | npm |
 
 ## Development Rules
 
@@ -13,25 +19,23 @@ See `.devcontainer/CLAUDE.md` for full devcontainer documentation.
 - Feature and fix branches should be created from `staging` and PRed back to `staging`.
 - PRs from `staging` to `main` are used for releases.
 
-### Changelog
+### Package-Specific Rules
 
-Every change MUST have a corresponding entry in `.devcontainer/CHANGELOG.md`.
+Each package has its own `CLAUDE.md` with package-specific development rules:
 
-- New features, enhancements, fixes, and removals each get their own bullet
-- Group related changes under domain headings (`###`) by area (e.g., `### Security`, `### Agent System`, `### Documentation`, `### Configuration`)
-- If an unreleased version section doesn't exist, add changes to the current version's section
-- Write entries from the user's perspective — what changed, not how it was implemented
+- [`container/CLAUDE.md`](container/CLAUDE.md) — changelog, documentation, and configuration rules for the devcontainer package
+- `cli/` — Bun/TypeScript CLI; run `bun test` for tests
+- `docs/` — Astro/Starlight site; run `npm run build` to verify
 
-### Documentation
+### Cross-Package Changes
 
-All user-facing changes MUST be reflected in documentation:
+When a change spans multiple packages, make the changes in a single branch and PR.
+Group related changes in the commit message by package.
 
-- **Plugin changes** → update the plugin's `README.md`
-- **Feature changes** → update `features/README.md` and the feature's `devcontainer-feature.json` if applicable
-- **Config system changes** → update `.devcontainer/CLAUDE.md`
-- **New config files in `.codeforge/config/`** → add entry to `.codeforge/file-manifest.json`
-- **Docs site** → update relevant pages in `docs/` if the docs site exists
+### Testing
 
-### User Configuration
+Run tests for each affected package before committing:
 
-All user-customizable configuration files belong in `.codeforge/`. New config files go in `.codeforge/config/`, with a corresponding entry in `.codeforge/file-manifest.json`.
+- **Container**: `cd container && npm test`
+- **CLI**: `cd cli && bun test`
+- **Docs**: `cd docs && npm run build`

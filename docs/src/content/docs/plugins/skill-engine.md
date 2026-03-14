@@ -81,7 +81,7 @@ Skills for working with Claude Code itself and extending CodeForge.
 | **worktree** | Git worktree lifecycle, EnterWorktree tool, `.worktreeinclude` setup, parallel workflows |
 
 :::note[Cross-Plugin Skills]
-The `specification-writing` skill and the spec lifecycle skills (`spec-new`, `spec-build`, etc.) live in the [Spec Workflow](./spec-workflow/) plugin, not the skill engine. However, the skill-suggester registers keywords for them so they are auto-suggested alongside skill-engine skills.
+The spec lifecycle skills (`/spec`, `/build`, `/specs`) live in the [Spec Workflow](./spec-workflow/) plugin, not the skill engine. However, the skill-suggester registers keywords for them so they are auto-suggested alongside skill-engine skills.
 :::
 
 ## Skill Activation Patterns
@@ -95,8 +95,8 @@ Here is a sampling of the phrases and terms that trigger each category of skill,
 | "Refactor this function" | refactoring-patterns |
 | "Check for security vulnerabilities" | security-checklist |
 | "Profile this code" or "find the bottleneck" | performance-profiling |
-| "Create a spec for this feature" | spec-new |
-| "Build from the spec" | spec-build |
+| "Create a spec for this feature" | spec |
+| "Build from the spec" | build |
 | "Debug the logs" or "what went wrong" | debugging |
 | "Spawn a team" or "work in parallel" | team |
 | "Search with ast-grep" | ast-grep-patterns |
@@ -179,5 +179,5 @@ skill-engine/
 
 - [Skills Reference](../features/skills/) — detailed per-skill documentation
 - [Agent System](./agent-system/) — agents that carry pre-loaded skills
-- [Spec Workflow](./spec-workflow/) — the specification-writing skill powers spec authoring
+- [Spec Workflow](./spec-workflow/) — spec lifecycle skills (`/spec`, `/build`, `/specs`)
 - [Hooks](../customization/hooks/) — how the skill suggester hook integrates

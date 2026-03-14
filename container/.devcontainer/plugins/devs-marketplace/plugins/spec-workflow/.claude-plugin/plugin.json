@@ -1,0 +1,7 @@
+{
+	"name": "spec-workflow",
+	"description": "Specification lifecycle management with directory-based spec packages: /spec (create & refine), /build (implement & close), /specs (dashboard)",
+	"author": {
+		"name": "AnExiledDev"
+	}
+}
