@@ -26,7 +26,9 @@ import { registerPluginSkillsCommand } from "./commands/plugin/skills.js";
 import { registerListCommand } from "./commands/session/list.js";
 import { registerSearchCommand } from "./commands/session/search.js";
 import { registerShowCommand } from "./commands/session/show.js";
+import { registerTaskListCommand } from "./commands/task/list.js";
 import { registerTaskSearchCommand } from "./commands/task/search.js";
+import { registerTaskShowCommand } from "./commands/task/show.js";
 import { isInsideContainer, proxyCommand } from "./utils/context.js";
 import { resolveContainer } from "./utils/docker.js";
 
@@ -49,7 +51,9 @@ registerShowCommand(session);
 
 const task = program.command("task").description("Search and manage tasks");
 
+registerTaskListCommand(task);
 registerTaskSearchCommand(task);
+registerTaskShowCommand(task);
 
 const plan = program.command("plan").description("Search and manage plans");
 

@@ -47,7 +47,6 @@
 	"homepage": "https://github.com/AnExiledDev/CodeForge/tree/main/cli#readme",
 	"files": [
 		"dist/",
-		"prompts/",
 		"README.md"
 	],
 	"bugs": {

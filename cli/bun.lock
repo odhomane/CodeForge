@@ -5,6 +5,7 @@
     "": {
       "name": "codeforge-cli",
       "dependencies": {
+        "@devcontainers/cli": "^0.71.0",
         "chalk": "^5.4.0",
         "commander": "^13.0.0",
       },
@@ -16,6 +17,8 @@
     },
   },
   "packages": {
+    "@devcontainers/cli": ["@devcontainers/cli@0.71.0", "", { "bin": { "devcontainer": "devcontainer.js" } }, "sha512-My13mDQCZy4zFsIoU2LVdnm3g2oSvxAkp+Z1gO/cYBYG3YUdteIEGm43igq67WPEpdJqE3LjKkIKp4I6fJBzEQ=="],
+
     "@types/bun": ["@types/bun@1.3.10", "", { "dependencies": { "bun-types": "1.3.10" } }, "sha512-0+rlrUrOrTSskibryHbvQkDOWRJwJZqZlxrUs1u4oOoTln8+WIXBPmAuCF35SWB2z4Zl3E84Nl/D0P7803nigQ=="],
 
     "@types/node": ["@types/node@22.19.13", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-akNQMv0wW5uyRpD2v2IEyRSZiR+BeGuoB6L310EgGObO44HSMNT8z1xzio28V8qOrgYaopIDNA18YgdXd+qTiw=="],
