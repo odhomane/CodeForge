@@ -46,8 +46,9 @@
 
 	// Feature install order: external runtimes first (Node, uv, Bun),
 	// then Claude Code native binary (no Node dependency), then custom features.
-	// npm-dependent features (agent-browser, ccusage, claude-session-dashboard,
-	// biome, lsp-servers) must come after Node. uv-dependent features (ruff, claude-monitor) must
+	// npm-dependent features (agent-browser, ccusage,
+	// biome, lsp-servers) must come after Node. bun-dependent features
+	// (claude-session-dashboard) must come after Bun. uv-dependent features (ruff, claude-monitor) must
 	// come after uv. notify-hook is second-to-last (lightweight, no dependencies).
 	// dbr (devcontainer-bridge) is last — standalone binary, no dependencies.
 	"overrideFeatureInstallOrder": [
@@ -160,7 +161,7 @@
 	"forwardPorts": [7847],
 	"portsAttributes": {
 		"7847": {
-			"label": "Claude Dashboard",
+			"label": "CodeForge Dashboard",
 			"onAutoForward": "notify"
 		},
 		"*": {

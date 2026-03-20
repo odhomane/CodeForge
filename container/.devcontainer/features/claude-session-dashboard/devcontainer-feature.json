@@ -1,33 +1,36 @@
 {
-  "id": "claude-session-dashboard",
-  "version": "1.0.0",
-  "name": "Claude Session Dashboard",
-  "description": "Local analytics dashboard for Claude Code sessions (token usage, tool calls, cost estimates)",
-  "documentationURL": "https://github.com/dlupiak/claude-session-dashboard",
-  "options": {
-    "version": {
-      "type": "string",
-      "description": "Dashboard version (e.g., 'latest', '1.0.0', 'none' to skip)",
-      "default": "latest"
-    },
-    "port": {
-      "type": "string",
-      "description": "Default port for the dashboard server",
-      "default": "7847"
-    },
-    "shells": {
-      "type": "string",
-      "description": "Which shells to configure aliases in (bash, zsh, or both)",
-      "default": "both",
-      "enum": ["bash", "zsh", "both"]
-    },
-    "username": {
-      "type": "string",
-      "description": "Container user to install for",
-      "default": "automatic"
-    }
-  },
-  "installsAfter": [
-    "ghcr.io/devcontainers/features/node:1"
-  ]
+	"id": "claude-session-dashboard",
+	"version": "1.0.0",
+	"name": "Claude Session Dashboard",
+	"description": "First-party analytics dashboard for Claude Code sessions, built from the CodeForge monorepo dashboard package",
+	"documentationURL": "https://github.com/AnExiledDev/CodeForge",
+	"options": {
+		"version": {
+			"type": "string",
+			"description": "Dashboard version (e.g., 'latest', '1.0.0', 'none' to skip)",
+			"default": "latest"
+		},
+		"port": {
+			"type": "string",
+			"description": "Default port for the dashboard server",
+			"default": "7847"
+		},
+		"shells": {
+			"type": "string",
+			"description": "Which shells to configure aliases in (bash, zsh, or both)",
+			"default": "both",
+			"enum": ["bash", "zsh", "both"]
+		},
+		"username": {
+			"type": "string",
+			"description": "Container user to install for",
+			"default": "automatic"
+		},
+		"autostart": {
+			"type": "boolean",
+			"description": "Auto-launch dashboard on container start",
+			"default": true
+		}
+	},
+	"installsAfter": ["ghcr.io/rails/devcontainer/features/bun:1"]
 }

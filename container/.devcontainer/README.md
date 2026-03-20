@@ -203,7 +203,7 @@ claude --resume               # Resume previous session
 | `ccburn` | Visual token burn rate tracker with pace indicators |
 | `ccstatusline` | Status bar display (integrated into Claude Code, not standalone CLI) |
 | `claude-monitor` | Real-time usage tracking |
-| `claude-dashboard` | Local session analytics dashboard (token usage, costs, timelines) |
+| `codeforge-dashboard` | Session analytics dashboard — auto-launches on start (port 7847) |
 
 ## Configuration
 

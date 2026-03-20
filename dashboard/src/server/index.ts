@@ -10,6 +10,7 @@ import { handleSSE } from "./routes/sse.js";
 import { createWatcher } from "./watcher.js";
 
 const PORT = parseInt(process.env.PORT || "5173", 10);
+const HOST = process.env.HOST || "127.0.0.1";
 const DIST_DIR = resolve(import.meta.dir, "../../build");
 
 const eventBus = getEventBus();
@@ -30,6 +31,7 @@ if (existsSync(claudeDir)) {
 
 const server = Bun.serve({
 	port: PORT,
+	hostname: HOST,
 	async fetch(req) {
 		const url = new URL(req.url);
 		const path = url.pathname;
@@ -107,4 +109,6 @@ const server = Bun.serve({
 	},
 });
 
-console.log(`Dashboard server running on http://localhost:${server.port}`);
+console.log(
+	`Dashboard server running on http://${server.hostname}:${server.port}`,
+);

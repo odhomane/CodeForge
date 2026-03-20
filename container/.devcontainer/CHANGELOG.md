@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Dashboard
+- **First-party dashboard** — replaced third-party `claude-session-dashboard` npm package with `codeforge-dashboard` (built from monorepo `dashboard/` package)
+- Auto-launch on container start via poststart hook (controllable with `autostart` option)
+- Install switched from npm to Bun (`bun install -g`)
+- Command renamed: `claude-dashboard` → `codeforge-dashboard`
+- Removed persistence symlink hook (dashboard DB now lives on bind mount at `~/.codeforge/data/`)
+
 ### Skills
 - Added `agent-browser` skill to skill-engine plugin — guides headless browser automation with CLI reference, workflow patterns, and authentication
 

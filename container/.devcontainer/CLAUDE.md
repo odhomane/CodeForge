@@ -29,7 +29,7 @@ Config files deploy via `.codeforge/file-manifest.json` on every container start
 | `ccusage` / `ccburn` | Token usage analysis / burn rate |
 | `agent-browser` | Headless Chromium (Playwright-based) |
 | `check-setup` | Verify CodeForge setup health |
-| `claude-dashboard` | Session analytics dashboard (port 7847) |
+| `codeforge-dashboard` | Session analytics dashboard — auto-launches on start (port 7847) |
 | `dbr` | Dynamic port forwarding ([devcontainer-bridge](https://github.com/bradleybeddoes/devcontainer-bridge)) |
 | `cc-tools` | List all installed tools with versions |
 
