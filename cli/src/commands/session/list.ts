@@ -2,11 +2,14 @@ import chalk from "chalk";
 import type { Command } from "commander";
 import { basename } from "path";
 import { loadHistory } from "../../loaders/history-loader.js";
+import { loadPlans } from "../../loaders/plan-loader.js";
 import { extractSessionMeta } from "../../loaders/session-meta.js";
+import { loadTasks } from "../../loaders/task-loader.js";
 import {
 	formatSessionListJson,
 	formatSessionListText,
 	type SessionListEntry,
+	type TaskSummary,
 } from "../../output/session-list.js";
 import { discoverSessionFiles } from "../../utils/glob.js";
 import { parseRelativeTime, parseTime } from "../../utils/time.js";
@@ -76,6 +79,39 @@ export function registerListCommand(parent: Command): void {
 						}
 					}
 					entries.push({ summary, meta });
+				}
+
+				// Load plans once and index by slug
+				const plans = await loadPlans();
+				const planSlugs = new Set(plans.map((p) => p.slug));
+
+				// Cache tasks by team name
+				const taskCache = new Map<string, TaskSummary>();
+
+				for (const entry of entries) {
+					// Plan indicator: match session slug to plan slug
+					if (entry.meta?.slug && planSlugs.has(entry.meta.slug)) {
+						entry.planSlug = entry.meta.slug;
+					}
+
+					// Task indicator: only load for sessions with teamName
+					if (entry.meta?.teamName) {
+						const teamName = entry.meta.teamName;
+						if (!taskCache.has(teamName)) {
+							const tasks = await loadTasks({ team: teamName });
+							taskCache.set(teamName, {
+								total: tasks.length,
+								completed: tasks.filter((t) => t.status === "completed").length,
+								inProgress: tasks.filter((t) => t.status === "in_progress")
+									.length,
+								pending: tasks.filter((t) => t.status === "pending").length,
+							});
+						}
+						const ts = taskCache.get(teamName)!;
+						if (ts.total > 0) {
+							entry.taskSummary = ts;
+						}
+					}
 				}
 
 				if (options.format === "json") {
