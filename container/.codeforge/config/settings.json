@@ -1,4 +1,5 @@
 {
+	"autoMemoryDirectory": ".claude/memory",
 	"cleanupPeriodDays": 60,
 	"autoCompact": true,
 	"alwaysThinkingEnabled": true,
