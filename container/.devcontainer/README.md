@@ -345,11 +345,11 @@ Agent definitions in `plugins/devs-marketplace/plugins/agent-system/agents/` pro
 | `statusline-config` | ccstatusline configuration |
 | `test-writer` | Test authoring with pass verification |
 
-### General Skills (22) — `skill-engine` plugin
+### General Skills (23) — `skill-engine` plugin
 
 Skills in `plugins/devs-marketplace/plugins/skill-engine/skills/` provide domain-specific coding references:
 
-`api-design` · `ast-grep-patterns` · `claude-agent-sdk` · `claude-code-headless` · `debugging` · `dependency-management` · `docker` · `docker-py` · `documentation-patterns` · `fastapi` · `git-forensics` · `migration-patterns` · `performance-profiling` · `pydantic-ai` · `refactoring-patterns` · `security-checklist` · `skill-building` · `sqlite` · `svelte5` · `team` · `testing` · `worktree`
+`agent-browser` · `api-design` · `ast-grep-patterns` · `claude-agent-sdk` · `claude-code-headless` · `debugging` · `dependency-management` · `docker` · `docker-py` · `documentation-patterns` · `fastapi` · `git-forensics` · `migration-patterns` · `performance-profiling` · `pydantic-ai` · `refactoring-patterns` · `security-checklist` · `skill-building` · `sqlite` · `svelte5` · `team` · `testing` · `worktree`
 
 ### Spec Skills (3) — `spec-workflow` plugin
 

@@ -29,7 +29,11 @@
 	"license": "GPL-3.0",
 	"files": [
 		".devcontainer/**/*",
+		"!.devcontainer/.env",
+		"!.devcontainer/.env.*",
+		"!.devcontainer/.secrets",
 		".codeforge/**/*",
+		"!.codeforge/.markers/**",
 		"setup.js",
 		"README.md"
 	],

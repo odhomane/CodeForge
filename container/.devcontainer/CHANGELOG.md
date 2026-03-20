@@ -1,5 +1,29 @@
 # CodeForge Devcontainer Changelog
 
+## Unreleased
+
+### Skills
+- Added `agent-browser` skill to skill-engine plugin — guides headless browser automation with CLI reference, workflow patterns, and authentication
+
+### Windows Compatibility
+
+- Fix `claude-code-native` install failure on Windows/macOS Docker Desktop — installer now falls back to `HOME` override when `su` is unavailable
+- Remove `preflight.sh` runtime check — redundant with Docker's own error reporting and caused failures on Windows
+
+### Configuration
+
+- Add `autoMemoryDirectory` setting — auto-memory now stored in project-local `.claude/memory/` instead of deep inside `~/.claude/projects/`, making it visible and version-controllable
+- Enhanced system prompts with auto-memory system, hooks awareness, safety rules, and anti-over-engineering guidance
+
+### Status Bar
+
+- Replace `ccburn-compact` statusline widget with native `session-usage` and `weekly-usage` ccstatusline widgets — eliminates external command dependency and 8s timeout
+- Comment out `ccburn` devcontainer feature (disabled by default) — functionality replaced by native widgets
+
+### Documentation
+
+- Document `${CLAUDE_PLUGIN_DATA}` variable in CLAUDE.md for future plugin persistent storage
+
 ## v2.1.1 — 2026-03-13
 
 ### Workspace Scope Guard

@@ -38,7 +38,7 @@ Config files deploy via `.codeforge/file-manifest.json` on every container start
 Declared in `settings.json` under `enabledPlugins`, auto-activated on start:
 
 - **agent-system** — 21 custom agents (4 workhorse + 17 specialist) + built-in agent redirection
-- **skill-engine** — 22 general coding skills + auto-suggestion
+- **skill-engine** — 23 general coding skills + auto-suggestion
 - **spec-workflow** — 3 spec lifecycle skills (`/spec`, `/build`, `/specs`) + spec-reminder hook
 - **session-context** — Git state injection, TODO harvesting, commit reminders
 - **auto-code-quality** — Auto-format + auto-lint + advisory test runner
@@ -78,3 +78,13 @@ The `~/.claude/` directory is backed by a Docker named volume (`codeforge-claude
 5. **Disable features**: Set `"version": "none"` in the feature's config
 6. **Disable setup steps**: Set flags to `false` in `.env`
 7. **Customize status bar**: Edit `.codeforge/config/ccstatusline-settings.json`
+
+## Plugin Development Notes
+
+### `${CLAUDE_PLUGIN_DATA}` — Persistent Plugin Storage
+
+Available since Claude Code v2.1.78. Resolves to a dedicated data directory per plugin that survives plugin updates (unlike `${CLAUDE_PLUGIN_ROOT}`, which points to the plugin's source directory).
+
+**Current state:** Not used in CodeForge plugins. Plugins store transient state in `/tmp/{prefix}-{session_id}`.
+
+**Future use:** When a plugin needs persistent state across sessions (cached configs, learned preferences, usage frequency), use `${CLAUDE_PLUGIN_DATA}` in hook commands instead of `/tmp/`.

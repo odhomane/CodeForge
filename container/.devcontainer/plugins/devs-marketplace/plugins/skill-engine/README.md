@@ -1,12 +1,12 @@
 # skill-engine
 
-Claude Code plugin that provides 22 coding knowledge packs (skills) with automatic suggestion based on user prompts. Each skill contains domain-specific instructions and reference material that Claude loads on demand via the `/skill` command.
+Claude Code plugin that provides 23 coding knowledge packs (skills) with automatic suggestion based on user prompts. Each skill contains domain-specific instructions and reference material that Claude loads on demand via the `/skill` command.
 
 ## What It Does
 
 Two capabilities:
 
-1. **Skill library** — 22 skills covering frameworks, tools, and development patterns. Each skill is a structured knowledge pack with a `SKILL.md` entrypoint and `references/` subdirectory containing detailed reference docs.
+1. **Skill library** — 23 skills covering frameworks, tools, and development patterns. Each skill is a structured knowledge pack with a `SKILL.md` entrypoint and `references/` subdirectory containing detailed reference docs.
 
 2. **Auto-suggestion** — A `UserPromptSubmit` hook watches user prompts for keyword matches and suggests relevant skills as context, so Claude can proactively load the right knowledge.
 
@@ -14,6 +14,7 @@ Two capabilities:
 
 | Skill | Domain |
 |-------|--------|
+| agent-browser | Headless browser automation, CLI reference, workflows |
 | api-design | REST conventions, error handling, API patterns |
 | ast-grep-patterns | Semantic code search patterns by language |
 | claude-agent-sdk | Building custom agents with the Agent SDK (TypeScript) |
@@ -135,7 +136,8 @@ skill-engine/
 +-- scripts/
 |   +-- skill-suggester.py           # Weighted scoring skill auto-suggestion
 +-- skills/
-|   +-- api-design/                  # 22 skill directories
+|   +-- agent-browser/                # 23 skill directories
+|   +-- api-design/
 |   +-- ast-grep-patterns/
 |   +-- claude-agent-sdk/
 |   +-- claude-code-headless/

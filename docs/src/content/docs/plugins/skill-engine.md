@@ -1,6 +1,6 @@
 ---
 title: Skill Engine
-description: The skill engine plugin provides 22 domain-specific knowledge packs with automatic suggestion based on conversation context.
+description: The skill engine plugin provides 23 domain-specific knowledge packs with automatic suggestion based on conversation context.
 sidebar:
   order: 3
 ---
@@ -35,7 +35,7 @@ Skills are designed to be practical, not encyclopedic. A typical skill includes:
 
 ## Available Skills
 
-CodeForge ships with 22 skills organized into three categories.
+CodeForge ships with 23 skills organized into three categories.
 
 ### Frameworks and Libraries
 
@@ -172,7 +172,7 @@ skill-engine/
     │   └── SKILL.md
     ├── debugging/
     │   └── SKILL.md
-    └── ...                  # 22 skills total
+    └── ...                  # 23 skills total
 ```
 
 ## Related

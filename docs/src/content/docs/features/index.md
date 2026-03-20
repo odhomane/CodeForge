@@ -15,7 +15,7 @@ Out of the box, CodeForge gives you:
 
 - **21 specialized AI agents** with focused expertise and safety-calibrated tool access
 - **38 domain knowledge packs** (skills) for frameworks, patterns, and workflows
-- **22 CLI tools** for session management, code quality, and development
+- **23 CLI tools** for session management, code quality, and development
 - **3 layers of code intelligence** — AST-based search, syntax parsing, and LSP semantic analysis
 - **17 plugins** that wire everything together with hooks, guards, and automation
 
@@ -43,7 +43,7 @@ Key safety features set CodeForge agents apart:
 
 ## Skills
 
-**38 domain-specific knowledge packs** give Claude deep expertise in frameworks, patterns, and workflows. The skill engine provides 22 core skills covering frameworks, practices, and Claude/CodeForge topics. Additional skills come from the spec-workflow (8), ticket-workflow (4), git-workflow (2), agent-system (1), and prompt-snippets (1) plugins. When you start discussing FastAPI routes or Svelte 5 runes, the skill engine detects the context and auto-suggests the relevant skill. Once loaded, the skill injects structured knowledge — best practices, code patterns, API references, and common pitfalls — directly into Claude's context for the current task.
+**38 domain-specific knowledge packs** give Claude deep expertise in frameworks, patterns, and workflows. The skill engine provides 23 core skills covering frameworks, practices, and Claude/CodeForge topics. Additional skills come from the spec-workflow (8), ticket-workflow (4), git-workflow (2), agent-system (1), and prompt-snippets (1) plugins. When you start discussing FastAPI routes or Svelte 5 runes, the skill engine detects the context and auto-suggests the relevant skill. Once loaded, the skill injects structured knowledge — best practices, code patterns, API references, and common pitfalls — directly into Claude's context for the current task.
 
 Each skill is built around a "mental model" — a concise explanation of how a technology works, followed by concrete patterns, code examples, and guidance. This is not generic documentation; skills encode the kind of working knowledge a senior specialist carries.
 
@@ -91,7 +91,7 @@ CodeForge installs LSP servers for Python (Pyright), TypeScript/JavaScript, and 
 |----------|-------|------------|
 | [Agents](./agents/) | 21 | Architect, Explorer, Security Auditor, Test Writer, Refactorer, and 16 more |
 | [Skills](./skills/) | 38 | FastAPI, Svelte 5, Docker, Testing, Debugging, Security, and 32 more |
-| [CLI Tools](./tools/) | 22 | Session search, token tracking, code quality, formatters, and runtimes |
+| [CLI Tools](./tools/) | 23 | Session search, token tracking, code quality, formatters, and runtimes |
 | [Code Intelligence](./code-intelligence/) | 3 | ast-grep, tree-sitter, LSP servers for Python/TS/Go |
 
 ## How Features Are Delivered

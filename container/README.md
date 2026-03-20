@@ -85,7 +85,7 @@ tmux, agent-browser, claude-monitor, ccusage, ccburn, ccstatusline, ast-grep, tr
 
 ### Agents (17) & Skills (35)
 
-The `agent-system` plugin includes 17 specialized agents (architect, explorer, test-writer, security-auditor, etc.). The `skill-engine` plugin provides 22 general coding skills, `spec-workflow` adds 8 spec lifecycle skills, and `ticket-workflow` provides 4 ticket management skills.
+The `agent-system` plugin includes 17 specialized agents (architect, explorer, test-writer, security-auditor, etc.). The `skill-engine` plugin provides 23 general coding skills, `spec-workflow` adds 8 spec lifecycle skills, and `ticket-workflow` provides 4 ticket management skills.
 
 ## Architecture
 
@@ -104,7 +104,7 @@ CodeForge operates in three layers, each building on the one below:
 └──────────────────────────────────────────────┘
 ```
 
-**DevContainer** — The foundation. A Python 3.14 container with Node.js, Rust, and Bun runtimes, plus 22 custom features that install development tools (ast-grep, tree-sitter, biome, ruff, and others).
+**DevContainer** — The foundation. A Python 3.14 container with Node.js, Rust, and Bun runtimes, plus 23 custom features that install development tools (ast-grep, tree-sitter, biome, ruff, and others).
 
 **CodeForge Layer** — The intelligence. 17 plugins register hooks that validate commands, inject context, and enforce safety. 21 agents provide specialized personas. 38 skills offer on-demand reference material. System prompts and rules shape behavior.
 

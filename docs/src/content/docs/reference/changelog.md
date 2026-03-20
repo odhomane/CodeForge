@@ -82,6 +82,11 @@ For minor and patch updates, you can usually just rebuild the container. Check t
 
 ## v2.0.3 — 2026-03-03
 
+### CLI Feature
+
+- Rewrote `codeforge-cli` devcontainer feature to use a self-bootstrapping wrapper instead of `npm install -g` — the CLI now runs directly from workspace source via `bun`, auto-installing dependencies on first use
+- Removed `ccms` from `cc-tools` tool listing (replaced by `codeforge session search`)
+
 ### Workspace Scope Guard
 
 - Fix scope guard blocking project root access from subdirectory CWDs — now detects git repository root and uses it as scope boundary
