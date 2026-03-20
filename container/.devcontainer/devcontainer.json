@@ -5,8 +5,6 @@
 	"workspaceFolder": "/workspaces",
 	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces,type=bind",
 
-	"initializeCommand": "bash .devcontainer/scripts/preflight.sh",
-
 	"mounts": [
 		{
 			"source": "codeforge-claude-config-${devcontainerId}",
@@ -48,7 +46,7 @@
 
 	// Feature install order: external runtimes first (Node, uv, Bun),
 	// then Claude Code native binary (no Node dependency), then custom features.
-	// npm-dependent features (agent-browser, ccusage, ccburn, claude-session-dashboard,
+	// npm-dependent features (agent-browser, ccusage, claude-session-dashboard,
 	// biome, lsp-servers) must come after Node. uv-dependent features (ruff, claude-monitor) must
 	// come after uv. notify-hook is second-to-last (lightweight, no dependencies).
 	// dbr (devcontainer-bridge) is last — standalone binary, no dependencies.
@@ -64,7 +62,7 @@
 		"./features/agent-browser",
 		"./features/claude-monitor",
 		"./features/ccusage",
-		"./features/ccburn",
+		// "./features/ccburn",
 		"./features/ccstatusline",
 		"./features/claude-session-dashboard",
 		"./features/ast-grep",
@@ -113,11 +111,12 @@
 			"installer": "uv",
 			"username": "automatic"
 		},
-		"./features/ccburn": {
-			"version": "latest",
-			"shells": "both",
-			"username": "automatic"
-		},
+		// ccburn — disabled; replaced by native ccstatusline session-usage/weekly-usage widgets
+		// "./features/ccburn": {
+		// 	"version": "latest",
+		// 	"shells": "both",
+		// 	"username": "automatic"
+		// },
 		"./features/ccstatusline": {
 			"username": "automatic"
 		},
@@ -158,7 +157,7 @@
 		"ghcr.io/bradleybeddoes/devcontainer-bridge/dbr:0.2.0": {}
 	},
 
-	"forwardPorts": [],
+	"forwardPorts": [7847],
 	"portsAttributes": {
 		"7847": {
 			"label": "Claude Dashboard",
@@ -215,5 +214,5 @@
 		}
 	},
 
-	"runArgs": ["--memory=6g", "--memory-swap=12g"]
+	"runArgs": ["--memory=6g", "--memory-swap=12g", "--name=codeforge"]
 }

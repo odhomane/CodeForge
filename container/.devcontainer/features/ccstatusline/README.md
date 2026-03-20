@@ -24,20 +24,16 @@ A DevContainer Feature that installs and configures [ccstatusline](https://githu
 
 ## Display Format
 
-### 6-Line Powerline Layout
+### 3-Line Powerline Layout
 
 ```
-Line 1: Context Length ▶ Context % ▶ Model
-Line 2: Tokens In ▶ Tokens Out ▶ Tokens Cached
-Line 3: Git Branch ▶ Git Changes ▶ Git Worktree
-Line 4: Session Clock ▶ Session Cost ▶ Block Timer
-Line 5: Tokens Total ▶ Version ▶ cc --resume {sessionId}
-Line 6: Session: 🧊 45% (2h14m) | Weekly: 🔥 12% | Sonnet: 🧊 3%
+Line 1: Model ▶ Context Length ▶ Context % ▶ Token Metrics
+Line 2: Git Branch ▶ Git Changes ▶ Git Worktree ▶ Session Metrics
+Line 3: Resume Session ▶ CWD ▶ Session Usage ▶ Weekly Usage
 ```
 
-- **Lines 1-4**: Core session metrics, token tracking, git status, and cost
-- **Line 5**: Totals + copyable session resume command for `cc --resume`
-- **Line 6**: Live burn rate from [ccburn](https://github.com/JuanjoFuchs/ccburn) with pace indicators
+- **Lines 1-2**: Core session metrics, token tracking, git status, and cost
+- **Line 3**: Session resume command, working directory, and native usage tracking (session + weekly)
 
 All widgets connected with powerline arrows (monokai theme).
 
@@ -71,9 +67,9 @@ The feature will validate these are present and exit with an error if missing.
 ## Features
 
 - ✅ **Powerline Mode**: Seamless arrow separators between widgets (monokai theme)
-- ✅ **6-Line Layout**: 16 widgets covering context, tokens, git, cost, session ID, and burn rate
+- ✅ **3-Line Layout**: Compact widget layout covering context, tokens, git, cost, session resume, and usage tracking
 - ✅ **Session Resume**: Copyable `cc --resume {sessionId}` command via custom-command widget
-- ✅ **Burn Rate Tracking**: Live ccburn compact output showing pace indicators (🧊/🔥/🚨)
+- ✅ **Usage Tracking**: Native session-usage and weekly-usage widgets (no external dependencies)
 - ✅ **ANSI Colors**: High-contrast colors optimized for dark terminals
 - ✅ **Automatic Integration**: Auto-configures `~/.claude/settings.json`
 - ✅ **Idempotent**: Safe to run multiple times
@@ -169,7 +165,10 @@ Widgets are configured in the `lines` array:
 
 **External Metrics (custom-command):**
 - `custom-command` → `/usr/local/bin/ccstatusline-session-resume` - Copyable resume command
-- `custom-command` → `/usr/local/bin/ccburn-statusline` - Burn rate with pace indicators
+
+**Usage Tracking:**
+- `session-usage` - 5-hour rolling session usage
+- `weekly-usage` - 7-day weekly usage
 
 **Other:**
 - `cwd` - Current working directory
