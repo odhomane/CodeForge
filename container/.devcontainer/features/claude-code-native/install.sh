@@ -74,14 +74,22 @@ echo "[claude-code-native] Downloading official installer..."
 if [ "${USERNAME}" = "root" ]; then
 	curl -fsSL https://claude.ai/install.sh | bash -s -- "${TARGET}"
 else
-	su - "${USERNAME}" -c "curl -fsSL https://claude.ai/install.sh | bash -s -- \"${TARGET}\""
+	# Try su first (works on native Linux); fall back to HOME override
+	# for VM-based Docker (Windows/macOS Docker Desktop) where su can fail.
+	if su - "${USERNAME}" -c "curl -fsSL https://claude.ai/install.sh | bash -s -- \"${TARGET}\"" 2>/dev/null; then
+		: # success
+	else
+		echo "[claude-code-native] su failed, falling back to HOME override..."
+		env HOME="${USER_HOME}" bash -c "curl -fsSL https://claude.ai/install.sh | bash -s -- '${TARGET}'"
+		chown -R "${USERNAME}:" "${USER_HOME}/.local/share/claude" "${USER_HOME}/.local/bin/claude"
+	fi
 fi
 
 # === VERIFICATION ===
 CLAUDE_BIN="${USER_HOME}/.local/bin/claude"
 
 if [ -x "${CLAUDE_BIN}" ]; then
-	INSTALLED_VERSION=$(su - "${USERNAME}" -c "${CLAUDE_BIN} --version 2>/dev/null" || echo "unknown")
+	INSTALLED_VERSION=$("${CLAUDE_BIN}" --version 2>/dev/null || echo "unknown")
 	echo "[claude-code-native] ✓ Claude Code installed: ${INSTALLED_VERSION}"
 	echo "[claude-code-native]   Binary: ${CLAUDE_BIN}"
 else
