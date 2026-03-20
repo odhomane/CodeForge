@@ -49,6 +49,9 @@ container/.devcontainer/**/*.codeforge-new
 container/.devcontainer/**/*.bak
 container/.devcontainer/.codeforge-preserve
 
+# Specs (local working directory)
+.specs/
+
 # CLI-specific
 cli/.pytest_cache/
 cli/.ruff_cache/
