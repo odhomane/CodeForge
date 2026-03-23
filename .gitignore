@@ -52,10 +52,18 @@ container/.devcontainer/.codeforge-preserve
 # Specs (local working directory)
 .specs/
 
+# Claude Code local state
+.claude/
+
 # CLI-specific
 cli/.pytest_cache/
 cli/.ruff_cache/
 .codeforge/data/
+
+# Dashboard-specific
+dashboard/.svelte-kit/
+dashboard/build/
+dashboard/mockups/
 
 # Docs-specific
 docs/.astro/

@@ -1,1 +1,0 @@
-import{it as e}from"./BzFtKHj8.js";var t=e({files:[],loading:!1,error:null});async function n(){t.loading=!0,t.error=null;try{let e=await fetch(`/api/context`);if(!e.ok)throw Error(`Failed to fetch context files: ${e.status}`);t.files=(await e.json()).files}catch(e){t.error=e instanceof Error?e.message:String(e)}finally{t.loading=!1}}export{n,t};

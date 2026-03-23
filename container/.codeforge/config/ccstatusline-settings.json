@@ -93,7 +93,10 @@
 			},
 			{
 				"id": "a529e50e-b9f3-4150-a812-937ab81545e8",
-				"type": "git-changes",
+				"type": "custom-command",
+				"commandPath": "/usr/local/bin/ccstatusline-git-changes",
+				"timeout": 500,
+				"preserveColors": false,
 				"backgroundColor": "bgBrightBlue"
 			},
 			{

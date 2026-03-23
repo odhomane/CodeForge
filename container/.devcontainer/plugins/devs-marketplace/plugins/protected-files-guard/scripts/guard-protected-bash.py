@@ -20,7 +20,11 @@ PROTECTED_PATTERNS = [
         r"(^|/)\.env\.(?!example$)[^/]+$",
         "Blocked: .env.* files contain secrets - edit manually if needed",
     ),
-    (r"(^|/)\.git(/|$)", "Blocked: .git is managed by git"),
+    (
+        r"(^|/)\.git(/|$)",
+        "Blocked: .git is managed by git",
+        {"allow": [r"\.git/index\.lock$"]},
+    ),
     (
         r"(^|/)package-lock\.json$",
         "Blocked: package-lock.json - use npm install instead",
@@ -158,8 +162,13 @@ def extract_write_targets(command: str) -> list[str]:
 def check_path(file_path: str) -> tuple[bool, str]:
     """Check if file path matches any protected pattern."""
     normalized = file_path.replace("\\", "/")
-    for pattern, message in PROTECTED_PATTERNS:
+    for entry in PROTECTED_PATTERNS:
+        pattern, message = entry[0], entry[1]
+        opts = entry[2] if len(entry) > 2 else {}
         if re.search(pattern, normalized, re.IGNORECASE):
+            # Check if path matches an allow-list exception
+            if any(re.search(a, normalized) for a in opts.get("allow", [])):
+                continue
             return True, message
     return False, ""
 

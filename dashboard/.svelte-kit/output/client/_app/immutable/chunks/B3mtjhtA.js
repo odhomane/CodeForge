@@ -1,1 +1,0 @@
-import{it as e}from"./BzFtKHj8.js";var t=e({plans:[],loading:!1,error:null});async function n(){t.loading=!0,t.error=null;try{let e=await fetch(`/api/plans`);if(!e.ok)throw Error(`Failed to fetch plans: ${e.status}`);t.plans=(await e.json()).plans}catch(e){t.error=e instanceof Error?e.message:String(e)}finally{t.loading=!1}}export{t as n,n as t};
