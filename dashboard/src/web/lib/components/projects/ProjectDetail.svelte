@@ -10,6 +10,10 @@ import {
 	fetchProjectAnalytics,
 } from "$lib/stores/analytics.svelte.js";
 import {
+	memoryStore,
+	startProjectAnalysis,
+} from "$lib/stores/memory.svelte.js";
+import {
 	fetchProjectDetail,
 	projectStore,
 } from "$lib/stores/projects.svelte.js";
@@ -71,6 +75,17 @@ const projectFileData = $derived(
 	<div class="project-header">
 		<h2 class="project-name">{project.name}</h2>
 		<span class="project-path">{project.path}</span>
+		<div class="project-actions">
+			{#if memoryStore.activeProjectAnalysis[projectId]}
+				<button class="analyze-all-btn" disabled>
+					Analyzing {memoryStore.activeProjectAnalysis[projectId].completed}/{memoryStore.activeProjectAnalysis[projectId].queued}...
+				</button>
+			{:else}
+				<button class="analyze-all-btn" onclick={() => startProjectAnalysis(projectId)}>
+					Analyze All Sessions
+				</button>
+			{/if}
+		</div>
 	</div>
 
 	<div class="dashboard-section">
@@ -134,6 +149,30 @@ const projectFileData = $derived(
 		font-family: var(--font-mono);
 		font-size: 13px;
 		color: var(--text-muted);
+	}
+	.project-actions {
+		margin-top: 12px;
+	}
+	.analyze-all-btn {
+		background: var(--bg-card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--accent);
+		font-size: 13px;
+		font-weight: 500;
+		padding: 6px 14px;
+		cursor: pointer;
+		transition: all var(--transition);
+		font-family: var(--font-ui);
+	}
+	.analyze-all-btn:hover:not(:disabled) {
+		background: var(--accent-dim);
+		border-color: var(--accent);
+	}
+	.analyze-all-btn:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+		color: var(--amber);
 	}
 	.dashboard-section {
 		margin-bottom: 20px;

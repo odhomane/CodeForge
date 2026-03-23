@@ -1,4 +1,6 @@
 <script lang="ts">
+import { formatTokens } from "$lib/utils/format.js";
+
 let {
 	data = {} as Record<string, number>,
 }: {
@@ -37,7 +39,7 @@ function showTooltip(e: MouseEvent, day: string, hour: number) {
 	const dayFull = DAY_FULL[DAYS.indexOf(day)];
 	tooltip = {
 		visible: true,
-		text: `${dayFull} ${String(hour).padStart(2, "0")}:00 — ${count} session${count !== 1 ? "s" : ""}`,
+		text: `${dayFull} ${String(hour).padStart(2, "0")}:00 — ${formatTokens(count)} tokens`,
 		x: e.clientX + 10,
 		y: e.clientY - 30,
 	};
@@ -51,7 +53,7 @@ function hideTooltip() {
 <div class="card">
 	<div class="card-header">
 		<span class="card-title">Coding Rhythm</span>
-		<span class="card-subtitle">Sessions by day and hour</span>
+		<span class="card-subtitle">Token usage by day and hour</span>
 	</div>
 	<div class="hourly-grid-wrapper">
 		<div class="hourly-grid">

@@ -9,11 +9,18 @@ import MessageBubble from "./MessageBubble.svelte";
 interface Props {
 	agents: SubagentSession[];
 	unlinked: UnlinkedAgent[];
+	loading?: boolean;
 	parentStart?: string;
 	parentEnd?: string;
 }
 
-let { agents, unlinked, parentStart, parentEnd }: Props = $props();
+let {
+	agents,
+	unlinked,
+	loading = false,
+	parentStart,
+	parentEnd,
+}: Props = $props();
 
 let expandedId = $state<string | null>(null);
 let agentMessages = $state<Record<string, any[]>>({});
@@ -74,7 +81,9 @@ let completedCount = $derived(agents.filter((a) => a.time_end).length);
 		<AgentTimeline {agents} {parentStart} {parentEnd} />
 	{/if}
 
-	{#if agents.length === 0 && unlinked.length === 0}
+	{#if loading}
+		<div class="loading-state">Loading agent data...</div>
+	{:else if agents.length === 0 && unlinked.length === 0}
 		<div class="empty-state">No agent sessions found</div>
 	{/if}
 
@@ -195,7 +204,8 @@ let completedCount = $derived(agents.filter((a) => a.time_end).length);
 		font-size: 12px;
 		color: var(--text-dim);
 	}
-	.empty-state {
+	.empty-state,
+	.loading-state {
 		color: var(--text-muted);
 		font-size: 14px;
 		padding: 48px 24px;

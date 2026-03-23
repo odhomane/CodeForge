@@ -176,6 +176,8 @@ export interface SessionSummary {
 	promptCount: number;
 	timestamps: { first: string; last: string };
 	meta?: SessionMeta;
+	hasAgents?: boolean;
+	agentCount?: number;
 }
 
 export interface PlanMeta {

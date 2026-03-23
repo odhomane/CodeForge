@@ -6,11 +6,13 @@ import {
 	fetchRuns,
 	type MemoryTab,
 	memoryStore,
-	startMaintenance,
 } from "$lib/stores/memory.svelte.js";
+import MaintenanceModal from "./MaintenanceModal.svelte";
 import MemoriesTab from "./MemoriesTab.svelte";
 import ObservationsTab from "./ObservationsTab.svelte";
 import RunsTab from "./RunsTab.svelte";
+
+let showMaintenanceModal = $state(false);
 
 function selectTab(tab: MemoryTab) {
 	memoryStore.activeTab = tab;
@@ -19,6 +21,13 @@ function selectTab(tab: MemoryTab) {
 function handleProjectFilter(e: Event) {
 	const value = (e.target as HTMLSelectElement).value || null;
 	memoryStore.projectFilter = value;
+	const url = new URL(window.location.href);
+	if (value) {
+		url.searchParams.set("project", value);
+	} else {
+		url.searchParams.delete("project");
+	}
+	window.history.replaceState({}, "", url.toString());
 	const projectId = value ?? undefined;
 	fetchObservations(projectId);
 	fetchMemories(projectId);
@@ -26,18 +35,15 @@ function handleProjectFilter(e: Event) {
 	fetchMemoryStats(projectId);
 }
 
-async function handleMaintenance() {
-	const projectId = memoryStore.projectFilter;
-	if (!projectId) return;
-	await startMaintenance(projectId);
-}
+let projects = $state<Array<{ id: string; name: string }>>([]);
 
-let projects = $derived.by(() => {
-	const set = new Set<string>();
-	for (const obs of memoryStore.observations) set.add(obs.projectId);
-	for (const mem of memoryStore.memories) set.add(mem.projectId);
-	for (const run of memoryStore.runs) set.add(run.projectId);
-	return Array.from(set).sort();
+$effect(() => {
+	fetch("/api/projects")
+		.then((r) => r.json())
+		.then((data) => {
+			projects = data ?? [];
+		})
+		.catch(() => {});
 });
 </script>
 
@@ -52,13 +58,7 @@ let projects = $derived.by(() => {
 			</div>
 		</div>
 		<div class="page-header-right">
-			<select class="project-filter" onchange={handleProjectFilter} value={memoryStore.projectFilter ?? ""}>
-				<option value="">All Projects</option>
-				{#each projects as project}
-					<option value={project}>{project}</option>
-				{/each}
-			</select>
-			<button class="maintenance-btn" onclick={handleMaintenance} disabled={!memoryStore.projectFilter}>
+			<button class="maintenance-btn" onclick={() => showMaintenanceModal = true}>
 				Run Maintenance
 			</button>
 		</div>
@@ -83,13 +83,17 @@ let projects = $derived.by(() => {
 	{#if memoryStore.loading}
 		<div class="loading-state">Loading...</div>
 	{:else if memoryStore.activeTab === 'observations'}
-		<ObservationsTab />
+		<ObservationsTab {projects} onprojectchange={handleProjectFilter} />
 	{:else if memoryStore.activeTab === 'memories'}
-		<MemoriesTab />
+		<MemoriesTab {projects} onprojectchange={handleProjectFilter} />
 	{:else if memoryStore.activeTab === 'runs'}
-		<RunsTab />
+		<RunsTab {projects} onprojectchange={handleProjectFilter} />
 	{/if}
 </div>
+
+{#if showMaintenanceModal}
+	<MaintenanceModal onclose={() => showMaintenanceModal = false} />
+{/if}
 
 <style>
 	.memories-page {
@@ -138,16 +142,6 @@ let projects = $derived.by(() => {
 		gap: 10px;
 	}
 
-	.project-filter {
-		background: var(--bg-card);
-		border: 1px solid var(--border);
-		border-radius: var(--radius-sm);
-		color: var(--text-primary);
-		font-size: 13px;
-		padding: 6px 10px;
-		font-family: var(--font-mono);
-	}
-
 	.maintenance-btn {
 		background: var(--bg-card);
 		border: 1px solid var(--border);
@@ -160,15 +154,10 @@ let projects = $derived.by(() => {
 		transition: all var(--transition);
 	}
 
-	.maintenance-btn:hover:not(:disabled) {
+	.maintenance-btn:hover {
 		background: var(--bg-surface);
 		color: var(--text-primary);
 		border-color: var(--accent);
-	}
-
-	.maintenance-btn:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
 	}
 
 	.tab-bar {

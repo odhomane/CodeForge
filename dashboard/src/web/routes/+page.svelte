@@ -108,7 +108,7 @@ const cacheSavingsEstimate = $derived(
 const sparklineData = $derived(
 	ga?.sparklines
 		? [
-				ga.sparklines.sessions,
+				ga.sparklines.tokens ?? ga.sparklines.cost,
 				ga.sparklines.cost,
 				ga.sparklines.cost,
 				ga.sparklines.cacheEfficiency,
@@ -172,6 +172,7 @@ function handleBucketClick(bucket: string) {
 </div>
 
 <!-- Row 2: Activity heatmap -->
+<h2 class="section-title">Activity</h2>
 <div class="dashboard-section">
 	{#if isLoading && !ga}
 		<div class="card"><Skeleton width="100%" height="180px" /></div>
@@ -181,6 +182,7 @@ function handleBucketClick(bucket: string) {
 </div>
 
 <!-- Row 3: Cost chart + Token trend chart (shared crosshair) -->
+<h2 class="section-title">Cost & Tokens</h2>
 <div class="dashboard-section grid-2col">
 	{#if isLoading && !ga}
 		<div class="card"><Skeleton width="100%" height="220px" /></div>
@@ -204,6 +206,7 @@ function handleBucketClick(bucket: string) {
 </div>
 
 <!-- Row 4: ModelComparisonTable + SessionScatterPlot -->
+<h2 class="section-title">Models</h2>
 <div class="dashboard-section grid-2col">
 	{#if isLoading && !ga}
 		<div class="card"><Skeleton width="100%" height="320px" /></div>
@@ -223,6 +226,7 @@ function handleBucketClick(bucket: string) {
 </div>
 
 <!-- Row 5: Project cost donut + Model distribution -->
+<h2 class="section-title">Projects & Tools</h2>
 <div class="dashboard-section grid-2col-sidebar">
 	{#if isLoading && !ga}
 		<div class="card"><Skeleton width="100%" height="200px" /></div>
@@ -247,6 +251,7 @@ function handleBucketClick(bucket: string) {
 </div>
 
 <!-- Row 7: Cache efficiency + Hourly heatmap -->
+<h2 class="section-title">Performance</h2>
 <div class="dashboard-section grid-2col">
 	{#if isLoading && !ga}
 		<div class="card"><Skeleton width="100%" height="200px" /></div>

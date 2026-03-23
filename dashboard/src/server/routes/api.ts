@@ -3,6 +3,7 @@ import {
 	insertMemory,
 	queryAllAgents,
 	queryAllContext,
+	queryAnalyzedSessionIds,
 	queryContextForSession,
 	queryGlobalAnalytics,
 	queryIngestionStatus,
@@ -11,6 +12,7 @@ import {
 	queryMemoryRuns,
 	queryMemoryStats,
 	queryObservationHistory,
+	queryObservationStatsByProject,
 	queryObservations,
 	queryPlanBySlug,
 	queryPlanHistory,
@@ -20,7 +22,6 @@ import {
 	queryProjects,
 	querySearch,
 	querySessionDetail,
-	querySessionHasAgents,
 	querySessionMessages,
 	querySessions,
 	querySubagentsForSession,
@@ -29,7 +30,12 @@ import {
 	updateMemoryStatus,
 	updateObservationStatus,
 } from "../../parser/queries.js";
-import { startAnalysis, startMaintenance } from "../memory-analyzer.js";
+import {
+	startAnalysis,
+	startMaintenance,
+	startProjectAnalysis,
+} from "../memory-analyzer.js";
+import { syncMemoriesToFile } from "../memory-sync.js";
 
 function json(data: unknown, status = 200): Response {
 	return new Response(JSON.stringify(data), {
@@ -91,6 +97,10 @@ function handleGetSessions(url: URL): Response {
 		}
 	}
 
+	// Batch check which sessions have been analyzed
+	const sessionIds = result.data.map((s) => s.sessionId);
+	const analyzedIds = queryAnalyzedSessionIds(db, sessionIds);
+
 	// Transform into the shape the frontend expects
 	const sessions = result.data.map((s) => ({
 		sessionId: s.sessionId,
@@ -127,6 +137,9 @@ function handleGetSessions(url: URL): Response {
 		hasTeam: !!s.teamName,
 		teamName: s.teamName ?? null,
 		taskProgress: s.teamName ? (taskProgressMap.get(s.teamName) ?? null) : null,
+		isAnalyzed: analyzedIds.has(s.sessionId),
+		hasAgents: s.agentCount > 0,
+		agentCount: s.agentCount,
 	}));
 
 	return json({
@@ -139,6 +152,9 @@ function handleGetSessions(url: URL): Response {
 
 async function handleGetSessionDetail(sessionId: string): Promise<Response> {
 	const db = getDb();
+	const resolvedId = resolveSessionId(db, sessionId);
+	if (!resolvedId) return errorResponse("Session not found", 404);
+	sessionId = resolvedId;
 	const detail = querySessionDetail(db, sessionId);
 	if (!detail) return errorResponse("Session not found", 404);
 
@@ -184,17 +200,26 @@ async function handleGetSessionDetail(sessionId: string): Promise<Response> {
 			.all(sessionId) as Array<{ file_path: string }>
 	).map((r) => r.file_path);
 
-	// Check for subagents
-	const hasAgents = querySessionHasAgents(db, sessionId);
-	const agentCount = hasAgents
-		? ((
-				db
-					.prepare(
-						"SELECT COUNT(*) as cnt FROM sessions WHERE parent_session_id = ?",
-					)
-					.get(sessionId) as { cnt: number } | null
-			)?.cnt ?? 0)
-		: 0;
+	// Check for subagents — count both linked sessions and unlinked subagents
+	// to match what the agents tab actually displays
+	const linkedCount =
+		(
+			db
+				.prepare(
+					"SELECT COUNT(*) as cnt FROM sessions WHERE parent_session_id = ?",
+				)
+				.get(sessionId) as { cnt: number } | null
+		)?.cnt ?? 0;
+	const unlinkedCount =
+		(
+			db
+				.prepare(
+					"SELECT COUNT(*) as cnt FROM subagents WHERE parent_session_id = ? AND session_id IS NULL",
+				)
+				.get(sessionId) as { cnt: number } | null
+		)?.cnt ?? 0;
+	const agentCount = linkedCount + unlinkedCount;
+	const hasAgents = agentCount > 0;
 
 	// Build response matching what the frontend expects
 	return json({
@@ -228,14 +253,31 @@ async function handleGetSessionDetail(sessionId: string): Promise<Response> {
 	});
 }
 
+function resolveSessionId(
+	db: ReturnType<typeof getDb>,
+	sessionId: string,
+): string | null {
+	const exact = db
+		.prepare("SELECT session_id FROM sessions WHERE session_id = ?")
+		.get(sessionId) as { session_id: string } | null;
+	if (exact) return exact.session_id;
+
+	// Prefix-match fallback
+	const prefixMatch = db
+		.prepare(
+			"SELECT session_id FROM sessions WHERE session_id LIKE ? || '%' LIMIT 1",
+		)
+		.get(sessionId) as { session_id: string } | null;
+	return prefixMatch?.session_id ?? null;
+}
+
 function handleGetSessionMessages(sessionId: string, url: URL): Response {
 	const db = getDb();
 
-	// Verify session exists
-	const exists = db
-		.prepare("SELECT 1 FROM sessions WHERE session_id = ?")
-		.get(sessionId);
-	if (!exists) return errorResponse("Session not found", 404);
+	// Verify session exists (with prefix-match fallback)
+	const resolvedId = resolveSessionId(db, sessionId);
+	if (!resolvedId) return errorResponse("Session not found", 404);
+	sessionId = resolvedId;
 
 	// Support both afterId (new DB approach) and offset (legacy byte-offset approach)
 	const afterIdParam = url.searchParams.get("afterId");
@@ -328,7 +370,9 @@ function handleGetSessionTasks(sessionId: string): Response {
 
 function handleGetSessionAgents(sessionId: string): Response {
 	const db = getDb();
-	const result = querySubagentsForSession(db, sessionId);
+	const resolvedId = resolveSessionId(db, sessionId);
+	if (!resolvedId) return errorResponse("Session not found", 404);
+	const result = querySubagentsForSession(db, resolvedId);
 	return json(result);
 }
 
@@ -383,15 +427,16 @@ export async function handleApiRequest(req: Request): Promise<Response> {
 					return errorResponse("sessionId is required", 400);
 				}
 				// Look up projectId from session if not provided
+				const db = getDb();
 				let projectId = body.projectId;
 				if (!projectId) {
-					const db = getDb();
 					const session = db
 						.prepare("SELECT project_id FROM sessions WHERE session_id = ?")
 						.get(body.sessionId) as { project_id: string } | null;
 					if (!session) return errorResponse("Session not found", 404);
 					projectId = session.project_id;
 				}
+
 				const runId = startAnalysis(body.sessionId, projectId, body.budgetUsd);
 				return json({ runId });
 			} catch (err) {
@@ -421,6 +466,25 @@ export async function handleApiRequest(req: Request): Promise<Response> {
 			}
 		}
 
+		if (path === "/api/memory/analyze-project") {
+			try {
+				const body = (await req.json()) as {
+					projectId?: string;
+					budgetUsd?: number;
+				};
+				if (!body.projectId) {
+					return errorResponse("projectId is required", 400);
+				}
+				const result = startProjectAnalysis(body.projectId, body.budgetUsd);
+				return json(result);
+			} catch (err) {
+				return errorResponse(
+					err instanceof Error ? err.message : "Invalid request",
+					400,
+				);
+			}
+		}
+
 		const obsApproveMatch = path.match(
 			/^\/api\/memory\/observations\/(\d+)\/approve$/,
 		);
@@ -436,14 +500,46 @@ export async function handleApiRequest(req: Request): Promise<Response> {
 				content: string;
 			} | null;
 			if (!obs) return errorResponse("Observation not found", 404);
+
+			// Parse body for memory content and optional tags
+			let body: { content?: string; tags?: string } = {};
+			try {
+				body = (await req.json()) as { content?: string; tags?: string };
+			} catch {
+				// Allow empty body for backward compat
+			}
+
+			const memoryContent = body.content?.trim();
+			if (!memoryContent) {
+				return errorResponse("Memory content is required", 400);
+			}
+			if (memoryContent.length > 500) {
+				return errorResponse(
+					"Memory content must be 500 characters or less",
+					400,
+				);
+			}
+			// Reject verbatim copies of observation content
+			if (memoryContent === obs.content.trim()) {
+				return errorResponse(
+					"Memory text is identical to the observation — rewrite as an imperative instruction (e.g., 'When X, do Y')",
+					400,
+				);
+			}
+
+			const category = body.tags?.trim() || obs.category;
 			const memoryId = insertMemory(db, {
 				projectId: obs.project_id,
-				category: obs.category,
-				content: obs.content,
+				category,
+				content: memoryContent,
 				sourceObservationIds: [obs.id],
 				confidence: 1.0,
 			});
 			updateObservationStatus(db, obsId, "promoted", memoryId);
+
+			// Sync to MEMORY.md
+			syncMemoriesToFile(obs.project_id).catch(() => {});
+
 			return json({ memoryId });
 		}
 
@@ -467,9 +563,15 @@ export async function handleApiRequest(req: Request): Promise<Response> {
 		if (memRevokeMatch) {
 			const db = getDb();
 			const memId = parseInt(memRevokeMatch[1], 10);
-			const mem = db.prepare("SELECT 1 FROM memories WHERE id = ?").get(memId);
+			const mem = db
+				.prepare("SELECT project_id FROM memories WHERE id = ?")
+				.get(memId) as { project_id: string } | null;
 			if (!mem) return errorResponse("Memory not found", 404);
 			updateMemoryStatus(db, memId, "revoked");
+
+			// Sync to MEMORY.md
+			syncMemoriesToFile(mem.project_id).catch(() => {});
+
 			return json({ success: true });
 		}
 
@@ -593,7 +695,11 @@ export async function handleApiRequest(req: Request): Promise<Response> {
 			decodeURIComponent(memoryRunDetailMatch[1]),
 		);
 		if (!detail) return errorResponse("Run not found", 404);
-		return json(detail);
+		return json({
+			...detail,
+			events: detail.eventsJson,
+			result: detail.resultJson,
+		});
 	}
 
 	const obsHistoryMatch = path.match(
@@ -634,6 +740,12 @@ export async function handleApiRequest(req: Request): Promise<Response> {
 			db,
 			url.searchParams.get("project") || undefined,
 		);
+		return json(stats);
+	}
+
+	if (path === "/api/memory/stats-by-project") {
+		const db = getDb();
+		const stats = queryObservationStatsByProject(db);
 		return json(stats);
 	}
 

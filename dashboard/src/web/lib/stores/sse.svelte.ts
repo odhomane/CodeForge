@@ -135,8 +135,27 @@ function handleMemoryRunEvent(_event: MessageEvent) {
 
 function handleMemoryRunComplete(event: MessageEvent) {
 	try {
-		JSON.parse(event.data);
-		memoryStore.analysisInProgress = null;
+		const data = JSON.parse(event.data);
+		if (data.sessionId) {
+			delete memoryStore.activeAnalyses[data.sessionId];
+		}
+		if (data.runType === "maintenance" && data.projectId) {
+			delete memoryStore.activeMaintenance[data.projectId];
+		}
+		// Track project-level analysis progress
+		if (
+			data.runType === "analysis" &&
+			data.projectId &&
+			memoryStore.activeProjectAnalysis[data.projectId]
+		) {
+			memoryStore.activeProjectAnalysis[data.projectId].completed++;
+			if (
+				memoryStore.activeProjectAnalysis[data.projectId].completed >=
+				memoryStore.activeProjectAnalysis[data.projectId].queued
+			) {
+				delete memoryStore.activeProjectAnalysis[data.projectId];
+			}
+		}
 		fetchObservations(memoryStore.projectFilter ?? undefined);
 		fetchRuns(memoryStore.projectFilter ?? undefined);
 		fetchMemoryStats(memoryStore.projectFilter ?? undefined);

@@ -20,6 +20,7 @@ import type {
 	ToolUseBlock,
 } from "../../../../parser/types.js";
 import { extractSearchableText } from "../../../../parser/types.js";
+import ConfirmModal from "../shared/ConfirmModal.svelte";
 import CopyCommand from "../shared/CopyCommand.svelte";
 import AgentsView from "./AgentsView.svelte";
 import ContextView from "./ContextView.svelte";
@@ -44,8 +45,10 @@ let planLoaded = $state(false);
 let contextLoaded = $state(false);
 let tasksLoaded = $state(false);
 let agentsData = $derived(session._agentsData ?? null);
+let agentsLoading = $state(false);
 let memoryLoaded = $state(false);
 let memoryRuns = $state<any[]>([]);
+let showReAnalyzeConfirm = $state(false);
 let didInit = $state(false);
 
 // Apply initialTab and lazy-load the selected tab's data
@@ -69,7 +72,10 @@ $effect(() => {
 			});
 		}
 		if (initialTab === "agents" && !agentsData) {
-			refreshSessionAgents(session.sessionId);
+			agentsLoading = true;
+			refreshSessionAgents(session.sessionId).then(() => {
+				agentsLoading = false;
+			});
 		}
 	}
 });
@@ -89,16 +95,18 @@ async function selectTab(tab: TabId) {
 		tasksLoaded = true;
 	}
 	if (tab === "agents" && !agentsData) {
+		agentsLoading = true;
 		await refreshSessionAgents(session.sessionId);
+		agentsLoading = false;
 	}
 	if (tab === "memory" && !memoryLoaded) {
 		try {
 			const res = await fetch(
-				`/api/memory/runs?sessionId=${encodeURIComponent(session.sessionId)}`,
+				`/api/memory/runs?session=${encodeURIComponent(session.sessionId)}`,
 			);
 			if (res.ok) {
 				const data = await res.json();
-				memoryRuns = data.runs ?? [];
+				memoryRuns = data.data ?? [];
 			}
 		} catch {
 			/* ignore */
@@ -108,6 +116,15 @@ async function selectTab(tab: TabId) {
 }
 
 async function handleAnalyze() {
+	if (memoryRuns.length > 0) {
+		showReAnalyzeConfirm = true;
+		return;
+	}
+	await startAnalysis(session.sessionId);
+}
+
+async function confirmReAnalyze() {
+	showReAnalyzeConfirm = false;
 	await startAnalysis(session.sessionId);
 }
 
@@ -351,9 +368,11 @@ function toggleGroup(index: number) {
       {/if}
     </div>
     <div class="detail-header-right">
-      <button class="analyze-btn" onclick={handleAnalyze} disabled={!!memoryStore.analysisInProgress}>
-        {#if memoryStore.analysisInProgress}
+      <button class="analyze-btn" onclick={handleAnalyze} disabled={!!memoryStore.activeAnalyses[session.sessionId]}>
+        {#if memoryStore.activeAnalyses[session.sessionId]}
           Analyzing...
+        {:else if memoryRuns.length > 0}
+          Re-Analyze
         {:else}
           Analyze
         {/if}
@@ -464,32 +483,26 @@ function toggleGroup(index: number) {
       class:active={activeTab === 'conversation'}
       onclick={() => selectTab('conversation')}
     >Conversation</button>
-    {#if showPlanTab}
-      <button
-        class="tab-btn"
-        class:active={activeTab === 'plan'}
-        onclick={() => selectTab('plan')}
-      >Plan</button>
-    {/if}
-    {#if showAgentsTab}
-      <button
-        class="tab-btn"
-        class:active={activeTab === 'agents'}
-        onclick={() => selectTab('agents')}
-      >Agents ({session.agentCount ?? 0})</button>
-    {/if}
+    <button
+      class="tab-btn"
+      class:active={activeTab === 'plan'}
+      onclick={() => selectTab('plan')}
+    >Plan</button>
+    <button
+      class="tab-btn"
+      class:active={activeTab === 'agents'}
+      onclick={() => selectTab('agents')}
+    >Agents ({session.agentCount ?? 0})</button>
     <button
       class="tab-btn"
       class:active={activeTab === 'context'}
       onclick={() => selectTab('context')}
     >Context</button>
-    {#if showTasksTab}
-      <button
-        class="tab-btn"
-        class:active={activeTab === 'tasks'}
-        onclick={() => selectTab('tasks')}
-      >Tasks</button>
-    {/if}
+    <button
+      class="tab-btn"
+      class:active={activeTab === 'tasks'}
+      onclick={() => selectTab('tasks')}
+    >Tasks</button>
     <button
       class="tab-btn"
       class:active={activeTab === 'memory'}
@@ -559,13 +572,14 @@ function toggleGroup(index: number) {
     <AgentsView
       agents={agentsData?.sessions ?? []}
       unlinked={agentsData?.unlinked ?? []}
+      loading={agentsLoading}
       parentStart={session.meta?.timeRange?.start}
       parentEnd={session.meta?.timeRange?.end}
     />
   {:else if activeTab === 'context'}
     <ContextView context={session.context} loading={!contextLoaded} />
   {:else if activeTab === 'tasks'}
-    <TasksView tasks={session.tasks} teamName={session.teamName} loading={!tasksLoaded && showTasksTab} />
+    <TasksView tasks={session.tasks} teamName={session.teamName} loading={!tasksLoaded} />
   {:else if activeTab === 'memory'}
     {#if !memoryLoaded}
       <div class="loading-state">Loading memory data...</div>
@@ -588,6 +602,18 @@ function toggleGroup(index: number) {
         {/each}
       </div>
     {/if}
+  {/if}
+
+  {#if showReAnalyzeConfirm}
+    <ConfirmModal
+      title="Re-Analyze Session?"
+      confirmLabel="Re-Analyze"
+      confirmVariant="accent"
+      onconfirm={confirmReAnalyze}
+      oncancel={() => showReAnalyzeConfirm = false}
+    >
+      <p class="reanalyze-msg">This session has been analyzed before. Run analysis again?</p>
+    </ConfirmModal>
   {/if}
 </div>
 
@@ -903,6 +929,13 @@ function toggleGroup(index: number) {
   .analyze-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  .reanalyze-msg {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
   }
 
   .loading-state {

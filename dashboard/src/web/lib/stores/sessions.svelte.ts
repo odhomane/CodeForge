@@ -38,6 +38,7 @@ export interface SessionSummary {
 	hasTeam?: boolean;
 	teamName?: string;
 	taskProgress?: { completed: number; total: number };
+	isAnalyzed?: boolean;
 }
 
 export interface SessionDetail extends SessionSummary {
@@ -98,6 +99,7 @@ export async function fetchSessions(params?: {
 				hasTeam: s.hasTeam ?? false,
 				teamName: s.teamName ?? undefined,
 				taskProgress: s.taskProgress ?? undefined,
+				isAnalyzed: !!s.isAnalyzed,
 			}),
 		) as SessionSummary[];
 		sessionStore.totalCount = data.total ?? 0;

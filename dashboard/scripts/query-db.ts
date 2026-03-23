@@ -40,7 +40,9 @@ function usage(): never {
 			"  session <session_id>\n" +
 			"  observations <project_id> [--status active]\n" +
 			"  tool-calls <session_id>\n" +
-			"  session-stats <session_id>",
+			"  session-stats <session_id>\n" +
+			"  session-overview <session_id>\n" +
+			"  conversation <session_id> [--role human|assistant] [--offset N] [--limit N]",
 	);
 }
 
@@ -53,6 +55,117 @@ if (!existsSync(dbPath)) {
 }
 
 const db = new Database(dbPath, { readonly: true, create: false });
+
+// --- Conversation classification helpers ---
+
+interface ContentBlock {
+	type: string;
+	text?: string;
+	name?: string;
+	input?: unknown;
+	content?: unknown;
+	thinking?: string;
+}
+
+interface ParsedMessage {
+	type: string;
+	message?: { role: string; content: string | ContentBlock[] };
+}
+
+function isSystemInjection(text: string): boolean {
+	return (
+		text.includes("<system-reminder>") ||
+		text.includes("<task-notification>") ||
+		text.includes("<new-diagnostics>") ||
+		text.includes("PreToolUse:") ||
+		text.includes("UserPromptSubmit hook") ||
+		text.includes("Plan mode still active") ||
+		text.includes("Plan mode is active")
+	);
+}
+
+function isSubmittedPlan(text: string): boolean {
+	if (text.length <= 1000) return false;
+	if (!text.includes("## ")) return false;
+	return (
+		text.startsWith("Implement the following plan:") ||
+		text.startsWith("Build from this spec:") ||
+		(text.includes("## Context") && text.includes("## Approach")) ||
+		text.includes("## Files to Modify")
+	);
+}
+
+interface ConversationMessage {
+	role: "human" | "assistant";
+	tag?: string;
+	content: string;
+	timestamp: string;
+}
+
+function classifyUserMessage(
+	parsed: ParsedMessage,
+	timestamp: string,
+): ConversationMessage | null {
+	const msg = parsed.message;
+	if (!msg) return null;
+
+	if (typeof msg.content === "string") {
+		if (isSystemInjection(msg.content)) return null;
+		const result: ConversationMessage = {
+			role: "human",
+			content: msg.content,
+			timestamp,
+		};
+		if (isSubmittedPlan(msg.content)) result.tag = "submitted-plan";
+		return result;
+	}
+
+	if (Array.isArray(msg.content)) {
+		const textBlocks = (msg.content as ContentBlock[]).filter(
+			(b) => b.type === "text" && b.text && !isSystemInjection(b.text),
+		);
+		if (textBlocks.length === 0) return null;
+		const joined = textBlocks.map((b) => b.text!).join("\n");
+		const result: ConversationMessage = {
+			role: "human",
+			content: joined,
+			timestamp,
+		};
+		if (isSubmittedPlan(joined)) result.tag = "submitted-plan";
+		return result;
+	}
+
+	return null;
+}
+
+function classifyAssistantMessage(
+	parsed: ParsedMessage,
+	timestamp: string,
+): ConversationMessage | null {
+	const msg = parsed.message;
+	if (!msg || !Array.isArray(msg.content)) return null;
+
+	const parts: string[] = [];
+	let hasText = false;
+
+	for (const block of msg.content as ContentBlock[]) {
+		if (block.type === "text" && block.text) {
+			parts.push(block.text);
+			hasText = true;
+		} else if (block.type === "tool_use" && block.name) {
+			parts.push(`[Used tool: ${block.name}]`);
+		}
+		// skip thinking blocks
+	}
+
+	if (!hasText) return null;
+
+	return {
+		role: "assistant",
+		content: parts.join("\n"),
+		timestamp,
+	};
+}
 
 // --- Commands ---
 
@@ -116,7 +229,7 @@ switch (command) {
                 s.models, s.input_tokens, s.output_tokens, s.message_count,
                 s.time_start, s.time_end
          FROM sessions s
-         LEFT JOIN projects p ON s.project_id = p.project_id
+         LEFT JOIN projects p ON s.project_id = p.encoded_name
          WHERE s.session_id = ?`,
 			)
 			.get(sessionId) as Record<string, unknown> | null;
@@ -249,6 +362,202 @@ switch (command) {
 				uniqueTools,
 				durationMs,
 			},
+		});
+		break;
+	}
+
+	case "session-overview": {
+		const sessionId = commandArgs[0];
+		if (!sessionId) error("Missing required argument: session_id");
+
+		const sessionRow = db
+			.query(
+				`SELECT s.session_id, s.project_id, p.name as project_name,
+                s.models, s.input_tokens, s.output_tokens, s.message_count,
+                s.time_start, s.time_end
+         FROM sessions s
+         LEFT JOIN projects p ON s.project_id = p.encoded_name
+         WHERE s.session_id = ?`,
+			)
+			.get(sessionId) as Record<string, unknown> | null;
+
+		if (!sessionRow) {
+			error(`Session not found: ${sessionId}`);
+		}
+
+		const timeStart = sessionRow.time_start as string | null;
+		const timeEnd = sessionRow.time_end as string | null;
+		let durationMs: number | null = null;
+		if (timeStart && timeEnd) {
+			durationMs = new Date(timeEnd).getTime() - new Date(timeStart).getTime();
+		}
+
+		const allMessages = db
+			.query(
+				"SELECT type, timestamp, raw_json FROM messages WHERE session_id = ? ORDER BY timestamp ASC",
+			)
+			.all(sessionId) as {
+			type: string;
+			timestamp: string;
+			raw_json: string;
+		}[];
+
+		const breakdown = {
+			humanMessages: 0,
+			assistantTextMessages: 0,
+			toolUseMessages: 0,
+			toolResultMessages: 0,
+			systemMessages: 0,
+			progressMessages: 0,
+		};
+
+		const humanPreviews: { index: number; chars: number; preview: string }[] =
+			[];
+		let humanIndex = 0;
+
+		for (const row of allMessages) {
+			if (row.type === "system") {
+				breakdown.systemMessages++;
+				continue;
+			}
+			if (row.type === "progress") {
+				breakdown.progressMessages++;
+				continue;
+			}
+
+			let parsed: ParsedMessage;
+			try {
+				parsed = JSON.parse(row.raw_json);
+			} catch {
+				continue;
+			}
+
+			if (row.type === "user") {
+				const classified = classifyUserMessage(parsed, row.timestamp);
+				if (classified) {
+					breakdown.humanMessages++;
+					humanPreviews.push({
+						index: humanIndex++,
+						chars: classified.content.length,
+						preview: classified.content.slice(0, 100),
+					});
+				}
+				continue;
+			}
+
+			if (
+				row.type === "assistant" &&
+				parsed.message &&
+				Array.isArray(parsed.message.content)
+			) {
+				let hasText = false;
+				for (const block of parsed.message.content as ContentBlock[]) {
+					if (block.type === "text" && block.text) hasText = true;
+					if (block.type === "tool_use") breakdown.toolUseMessages++;
+					if (block.type === "tool_result") breakdown.toolResultMessages++;
+				}
+				if (hasText) breakdown.assistantTextMessages++;
+			}
+		}
+
+		const toolRows = db
+			.query(
+				"SELECT tool_name, COUNT(*) as cnt FROM tool_calls WHERE session_id = ? GROUP BY tool_name ORDER BY cnt DESC",
+			)
+			.all(sessionId) as { tool_name: string; cnt: number }[];
+
+		const toolUsage: Record<string, number> = {};
+		for (const row of toolRows) {
+			toolUsage[row.tool_name] = row.cnt;
+		}
+
+		output({
+			session: {
+				sessionId: sessionRow.session_id,
+				projectId: sessionRow.project_id,
+				projectName: sessionRow.project_name,
+				models: sessionRow.models,
+				messageCount: sessionRow.message_count,
+				inputTokens: sessionRow.input_tokens,
+				outputTokens: sessionRow.output_tokens,
+				timeStart,
+				timeEnd,
+				durationMs,
+			},
+			breakdown,
+			toolUsage,
+			humanMessagePreviews: humanPreviews,
+		});
+		break;
+	}
+
+	case "conversation": {
+		const sessionId = commandArgs[0];
+		if (!sessionId) error("Missing required argument: session_id");
+
+		const roleFilter = getFlag(commandArgs, "--role") as
+			| "human"
+			| "assistant"
+			| undefined;
+		const limit = parseInt(getFlag(commandArgs, "--limit", "500")!, 10);
+		const offsetVal = parseInt(getFlag(commandArgs, "--offset", "0")!, 10);
+
+		const allMessages = db
+			.query(
+				"SELECT type, timestamp, raw_json FROM messages WHERE session_id = ? ORDER BY timestamp ASC",
+			)
+			.all(sessionId) as {
+			type: string;
+			timestamp: string;
+			raw_json: string;
+		}[];
+
+		const classified: ConversationMessage[] = [];
+		let filtered = 0;
+
+		for (const row of allMessages) {
+			if (row.type === "system" || row.type === "progress") {
+				filtered++;
+				continue;
+			}
+
+			let parsed: ParsedMessage;
+			try {
+				parsed = JSON.parse(row.raw_json);
+			} catch {
+				filtered++;
+				continue;
+			}
+
+			let msg: ConversationMessage | null = null;
+
+			if (row.type === "user") {
+				msg = classifyUserMessage(parsed, row.timestamp);
+			} else if (row.type === "assistant") {
+				msg = classifyAssistantMessage(parsed, row.timestamp);
+			}
+
+			if (!msg) {
+				filtered++;
+				continue;
+			}
+
+			classified.push(msg);
+		}
+
+		let results = classified;
+		if (roleFilter) {
+			const before = results.length;
+			results = results.filter((m) => m.role === roleFilter);
+			filtered += before - results.length;
+		}
+
+		const sliced = results.slice(offsetVal, offsetVal + limit);
+
+		output({
+			conversation: sliced,
+			total: sliced.length,
+			filtered,
 		});
 		break;
 	}

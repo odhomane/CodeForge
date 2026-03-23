@@ -8,7 +8,7 @@ description: >-
   programmatically", "set up permissions for scripts", or works with
   --output-format stream-json, --permission-mode, --json-schema, --resume.
   DO NOT USE for the TypeScript SDK API — use claude-agent-sdk instead.
-version: 0.2.0
+version: 0.3.0
 ---
 
 # Claude Code Headless
@@ -49,10 +49,14 @@ claude -p "Review this code for security issues" < src/auth.py
 | `--max-turns` | Limit agentic turns; exits with error at limit | `--max-turns 10` |
 | `--max-budget-usd` | Maximum dollar spend for the invocation | `--max-budget-usd 5.00` |
 | `--output-format` | Output format: `text`, `json`, `stream-json` | `--output-format json` |
-| `--verbose` | Full turn-by-turn output to stderr | `--verbose` |
+| `--verbose` | **Required with `stream-json`**. Full turn-by-turn JSON to stdout | `--verbose` |
 | `--allowedTools` | Auto-approve specific tools (glob patterns) | `--allowedTools "Read" "Bash(git *)"` |
 | `--disallowedTools` | Remove tools from model context entirely | `--disallowedTools "Write" "Edit"` |
 | `--permission-mode` | Permission behavior preset | `--permission-mode acceptEdits` |
+
+> **CRITICAL — `--verbose` is mandatory with `--output-format stream-json`.**
+> Without it, the CLI immediately errors: `Error: When using --print, --output-format=stream-json requires --verbose`.
+> This applies to both CLI invocations and programmatic `Bun.spawn`/`child_process.spawn` usage.
 
 ### System Prompt Flags
 
@@ -100,29 +104,64 @@ system (init) → assistant/user messages (interleaved) → result (final)
 ```
 
 ```bash
-claude -p "Refactor the database module" --output-format stream-json | while IFS= read -r line; do
+claude -p "Refactor the database module" --verbose --output-format stream-json | while IFS= read -r line; do
   type=$(echo "$line" | jq -r '.type')
   case "$type" in
-    system) echo "Session: $(echo "$line" | jq -r '.session_id')" ;;
+    system) ;; # Hook events — skip
     assistant) echo "$line" | jq -r '.message.content[]? | select(.type == "text") | .text' ;;
     result) echo "Cost: $(echo "$line" | jq -r '.total_cost_usd')" ;;
   esac
 done
 ```
 
+### stream-json Gotchas
+
+**1. `--verbose` is mandatory.** See the Key Flags table above. Without it, the process errors immediately.
+
+**2. Event field nesting.** The `assistant` event nests everything under `event.message`:
+- Model: `event.message.model` (NOT `event.model`)
+- Usage: `event.message.usage.input_tokens` / `.output_tokens` (NOT top-level)
+- Content: `event.message.content[]`
+
+The `result` event has top-level fields: `event.total_cost_usd`, `event.structured_output`, `event.subtype`, `event.num_turns`.
+
+**3. `ReadableStream.getReader()` is unreliable for subprocess stdout in long-lived Bun.serve processes.** When spawning Claude as a subprocess inside a Bun HTTP server, `proc.stdout.getReader()` may silently close after reading only a few events — even though the process runs to completion and produces all output. This is a Bun runtime issue with streaming readers in server contexts.
+
+**Fix:** Collect all stdout after the process exits instead of streaming:
+```typescript
+// BROKEN inside Bun.serve — reader closes prematurely
+const reader = proc.stdout.getReader();
+while (true) {
+  const { done, value } = await reader.read();  // ← may return done=true early
+  if (done) break;
+}
+
+// WORKS — collect after exit
+const exitCode = await proc.exited;
+const stdout = await new Response(proc.stdout).text();
+for (const line of stdout.split("\n")) {
+  const event = JSON.parse(line.trim());
+  // process event
+}
+```
+
+This trades real-time streaming for reliability. If you need real-time progress, emit SSE events based on the process being alive rather than individual stream events.
+
+**4. `system` events from hooks.** With `--verbose`, the stream includes `system` events for hooks (SessionStart, PreToolUse, etc.) before the first `assistant` event. Filter by `event.type === "assistant"` or `event.type === "result"` to skip them.
+
 ### jq Filtering Recipes
 
 ```bash
 # Extract only text output from assistant messages
-claude -p "query" --output-format stream-json \
+claude -p "query" --verbose --output-format stream-json \
   | jq -r 'select(.type == "assistant") | .message.content[]? | select(.type == "text") | .text'
 
 # Extract tool usage
-claude -p "query" --output-format stream-json \
+claude -p "query" --verbose --output-format stream-json \
   | jq -r 'select(.type == "assistant") | .message.content[]? | select(.type == "tool_use") | "\(.name): \(.input | tostring)"'
 
 # Get final cost
-claude -p "query" --output-format stream-json \
+claude -p "query" --verbose --output-format stream-json \
   | jq -r 'select(.type == "result") | "Cost: $\(.total_cost_usd) | Turns: \(.num_turns)"'
 ```
 
@@ -365,12 +404,79 @@ Check `is_error` and `subtype` to determine whether the invocation completed suc
 
 ---
 
+## Data Quality for LLM Analyzers
+
+When using Claude Code headless (`-p`) to build an agent that **analyzes other Claude Code sessions** (conversation logs, behavioral patterns, usage metrics), the quality of analysis depends entirely on how data is presented to the subprocess. These rules prevent the most common failure modes.
+
+### Rule 1: Give Tools, Not Data Dumps
+
+Instead of pre-loading all data into the prompt, provide query commands the agent can call via Bash:
+
+```bash
+# BAD — dumps everything into the prompt, wastes tokens, overwhelms the model
+claude -p "Here are 500 messages: $(cat messages.json). Analyze them." \
+  --allowedTools "Read"
+
+# GOOD — gives the agent tools to explore on its own
+claude -p "Use these query commands to explore the session data..." \
+  --allowedTools "Bash(bun run scripts/query-db.ts *)" "Read" "Glob" "Grep"
+```
+
+Benefits:
+- The agent decides what's relevant, not you
+- Keeps prompt tokens low
+- Scales to any data size
+- The agent can drill into interesting areas
+
+### Rule 2: Explain the Data Taxonomy
+
+When an LLM agent processes conversation data, it **MUST** understand the role taxonomy. Claude Code sessions have multiple message types that look similar but carry very different signal:
+
+| Message type | Role | Signal value |
+|-------------|------|-------------|
+| `user` (string, no system tags) | Human input | **PRIMARY** — preferences, corrections, instructions |
+| `user` (string, with `<system-reminder>`) | System injection | **NOISE** — hooks, workspace reminders |
+| `user` (array, text blocks only) | Human input | **PRIMARY** — if no system tags in text |
+| `user` (array, tool_result only) | Tool plumbing | **NOISE** — tool execution results |
+| `assistant` (text blocks) | Claude's response | **CONTEXT** — what user reacted to |
+| `assistant` (tool_use blocks) | Claude's actions | **CONTEXT** — workflow patterns |
+| `assistant` (thinking blocks) | Internal reasoning | **NOISE** — skip entirely |
+| `system` | System hooks | **NOISE** — skip |
+| `progress` | Tool execution | **NOISE** — skip |
+
+**Critical distinction:** In a typical 264-message session, only **7 messages** (~3%) are actual human input. The rest is tool plumbing, system injections, and assistant actions. Without taxonomy guidance, the analyzer treats all 264 messages as equally important and produces garbage.
+
+### Rule 3: Distinguish AI-Generated from Human-Authored Content
+
+Plans, specs, and proposals submitted by the user were typically **AI-generated in a previous session**. The user approved them, but didn't write them:
+
+```
+# This is a user message, but the PLAN CONTENT is AI-generated:
+"Implement the following plan:\n\n# Feature X\n\n## Context\n..."
+```
+
+The behavioral signal is: "user uses a plan-first workflow" — NOT the plan's content, structure, or technical decisions. Never attribute AI writing style to the user.
+
+### Rule 4: Comprehensive Prompts Beat Ambiguous Ones
+
+For analysis tasks, a detailed prompt with explicit guidance produces far better results than a terse one. Include:
+
+- **What good output looks like** — concrete examples of correct analysis
+- **What bad output looks like** — explicit anti-patterns with explanations
+- **Category definitions** — with concrete signals to look for in each
+- **Evidence requirements** — what counts as evidence, what doesn't
+- **Quality gates** — when to return empty results vs forcing observations
+
+A 3000-token prompt that produces 5 high-quality observations is better than a 500-token prompt that produces 20 garbage observations.
+
+---
+
 ## Ambiguity Policy
 
 These defaults apply when the user does not specify a preference. State the assumption when applying a default:
 
 - **System prompt:** `--append-system-prompt` over `--system-prompt` to preserve built-in behaviors
-- **Output format:** `--output-format json` for scripts; `stream-json` when real-time display is needed
+- **Output format:** `--output-format json` for scripts; `--verbose --output-format stream-json` when event-level access is needed (both flags required)
 - **Model:** `sonnet` for automation tasks (balanced cost and capability)
 - **Permission mode:** `--permission-mode acceptEdits` for trusted pipelines; `plan` for read-only analysis
 - **Session persistence:** `--no-session-persistence` in CI/CD unless session continuation is required
@@ -382,5 +488,5 @@ These defaults apply when the user does not specify a preference. State the assu
 
 | File | Contents |
 |------|----------|
-| `references/cli-flags-and-output.md` | Complete flag reference, `stream-json` event type catalog with TypeScript types, JSON output schema, jq recipes, `--input-format stream-json` chaining, environment variables, `--verbose` and `--debug` flags |
+| `references/cli-flags-and-output.md` | Complete flag reference, `stream-json` event type catalog with TypeScript types, JSON output schema, jq recipes, `--input-format stream-json` chaining, environment variables, `--verbose` requirement for `stream-json`, and `--debug` flags |
 | `references/sdk-and-mcp.md` | TypeScript and Python SDK full options, `canUseTool` callback, `ClaudeSDKClient` multi-turn, `createSdkMcpServer` custom tools, `--mcp-config`, `--permission-prompt-tool`, `--agents` subagent definitions, session continuation patterns |

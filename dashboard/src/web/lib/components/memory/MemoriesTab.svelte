@@ -2,10 +2,27 @@
 import { memoryStore, revokeMemory } from "$lib/stores/memory.svelte.js";
 import { formatRelativeTime } from "$lib/utils/format.js";
 
+let {
+	projects = [],
+	onprojectchange,
+}: {
+	projects?: Array<{ id: string; name: string }>;
+	onprojectchange?: (e: Event) => void;
+} = $props();
+
 let filtered = $derived(memoryStore.memories);
 </script>
 
 <div class="memories-tab">
+	<div class="filters-row">
+		<select class="filter-select" onchange={onprojectchange} value={memoryStore.projectFilter ?? ""}>
+			<option value="">All Projects</option>
+			{#each projects as project}
+				<option value={project.id}>{project.name}</option>
+			{/each}
+		</select>
+	</div>
+
 	{#if filtered.length === 0}
 		<div class="empty-state">No memories found.</div>
 	{:else}
@@ -13,7 +30,9 @@ let filtered = $derived(memoryStore.memories);
 			{#each filtered as mem (mem.id)}
 				<div class="mem-card">
 					<div class="mem-header">
-						<span class="category-badge">{mem.category}</span>
+						{#each mem.category.split(',') as tag}
+							<span class="category-badge">{tag.trim()}</span>
+						{/each}
 						<span class="confidence-badge">
 							{(mem.confidence * 100).toFixed(0)}% confidence
 						</span>
@@ -41,6 +60,21 @@ let filtered = $derived(memoryStore.memories);
 </div>
 
 <style>
+	.filters-row {
+		display: flex;
+		gap: 10px;
+	}
+
+	.filter-select {
+		background: var(--bg-card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--text-primary);
+		font-size: 12px;
+		padding: 5px 8px;
+		font-family: var(--font-mono);
+	}
+
 	.memories-tab {
 		display: flex;
 		flex-direction: column;

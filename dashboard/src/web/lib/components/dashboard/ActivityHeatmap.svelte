@@ -1,4 +1,6 @@
 <script lang="ts">
+import { formatTokens } from "$lib/utils/format.js";
+
 let { data = {} as Record<string, number> }: { data: Record<string, number> } =
 	$props();
 
@@ -81,7 +83,7 @@ const monthLabels = $derived.by(() => {
 function showTooltip(e: MouseEvent, cell: CellData) {
 	tooltip = {
 		visible: true,
-		text: `${cell.date}: ${cell.count} session${cell.count !== 1 ? "s" : ""}`,
+		text: `${cell.date}: ${formatTokens(cell.count)} tokens`,
 		x: e.clientX + 10,
 		y: e.clientY - 30,
 	};

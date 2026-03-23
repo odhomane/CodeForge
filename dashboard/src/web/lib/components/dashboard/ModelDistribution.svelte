@@ -33,13 +33,15 @@ const chartData: ChartItem[] = $derived(
 		color: MODEL_COLORS[item.model] ?? item.color,
 	})),
 );
+
+const chartHeight = $derived(Math.max(140, chartData.length * 36));
 </script>
 
 <div class="card">
 	<div class="card-header">
 		<span class="card-title">Model Distribution</span>
 	</div>
-	<div class="chart-body">
+	<div class="chart-body" style="height:{chartHeight}px">
 		{#if chartData.length > 0}
 			<BarChart
 				data={chartData}
@@ -49,6 +51,7 @@ const chartData: ChartItem[] = $derived(
 				xScale={scaleLinear()}
 				yScale={scaleBand().padding(0.35)}
 				bandPadding={0.35}
+				padding={{ left: 100, top: 8, right: 16, bottom: 24 }}
 				grid={false}
 				axis={{ tickLabelProps: { fill: 'var(--text-secondary)', style: 'font-family: var(--font-mono); font-size: 12px;' } }}
 				rule={false}
@@ -88,7 +91,6 @@ const chartData: ChartItem[] = $derived(
 
 <style>
 	.chart-body {
-		height: 200px;
 		padding: 4px 0;
 	}
 	.empty {

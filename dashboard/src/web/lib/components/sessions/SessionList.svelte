@@ -280,6 +280,27 @@ $effect(() => {
                     {/if}
                   </span>
                 {/if}
+                {#if session.hasAgents && session.agentCount > 0}
+                  <span
+                    class="agent-indicator"
+                    title="{session.agentCount} agent{session.agentCount !== 1 ? 's' : ''}"
+                    onclick={(e) => { e.stopPropagation(); goto(`/sessions/${session.sessionId}?tab=agents`); }}
+                    onkeydown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); goto(`/sessions/${session.sessionId}?tab=agents`); } }}
+                    role="link"
+                    tabindex="0"
+                  >
+                    <svg class="agent-icon" width="12" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="2" width="8" height="7" rx="2" />
+                      <circle cx="6.5" cy="5.5" r="1" fill="currentColor" stroke="none" />
+                      <circle cx="9.5" cy="5.5" r="1" fill="currentColor" stroke="none" />
+                      <path d="M5 9V11C5 12.1 5.9 13 7 13H9C10.1 13 11 12.1 11 11V9" />
+                    </svg>
+                    <span class="agent-count-text">{session.agentCount}</span>
+                  </span>
+                {/if}
+                {#if session.isAnalyzed}
+                  <span class="analyzed-badge" title="Previously analyzed">&#10003; Analyzed</span>
+                {/if}
               </td>
               <td>
                 {#if session.project}
@@ -508,6 +529,49 @@ $effect(() => {
 
   .task-progress-mini-total {
     color: var(--text-secondary);
+  }
+
+  .agent-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 6px;
+    cursor: pointer;
+    color: var(--text-dim);
+    vertical-align: middle;
+  }
+
+  .agent-indicator:hover {
+    color: var(--purple);
+  }
+
+  .agent-icon {
+    width: 12px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .agent-count-text {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+  }
+
+  .agent-indicator:hover .agent-count-text {
+    color: var(--purple);
+  }
+
+  .analyzed-badge {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--green);
+    background: var(--green-dim);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    vertical-align: middle;
   }
 
   .td-prompt {

@@ -12,6 +12,14 @@ import {
 } from "$lib/utils/format.js";
 import RunDetail from "./RunDetail.svelte";
 
+let {
+	projects = [],
+	onprojectchange,
+}: {
+	projects?: Array<{ id: string; name: string }>;
+	onprojectchange?: (e: Event) => void;
+} = $props();
+
 let expandedRunId = $state<string | null>(null);
 
 async function toggleRun(run: MemoryRun) {
@@ -43,6 +51,15 @@ function typeClass(runType: MemoryRun["runType"]): string {
 </script>
 
 <div class="runs-tab">
+	<div class="filters-row">
+		<select class="filter-select" onchange={onprojectchange} value={memoryStore.projectFilter ?? ""}>
+			<option value="">All Projects</option>
+			{#each projects as project}
+				<option value={project.id}>{project.name}</option>
+			{/each}
+		</select>
+	</div>
+
 	{#if memoryStore.runs.length === 0}
 		<div class="empty-state">No runs found.</div>
 	{:else}
@@ -68,6 +85,21 @@ function typeClass(runType: MemoryRun["runType"]): string {
 </div>
 
 <style>
+	.filters-row {
+		display: flex;
+		gap: 10px;
+	}
+
+	.filter-select {
+		background: var(--bg-card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-sm);
+		color: var(--text-primary);
+		font-size: 12px;
+		padding: 5px 8px;
+		font-family: var(--font-mono);
+	}
+
 	.runs-tab {
 		display: flex;
 		flex-direction: column;

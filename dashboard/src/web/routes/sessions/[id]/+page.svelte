@@ -11,7 +11,14 @@ let sessionId = $derived(page.params.id);
 
 let initialTab = $derived.by(() => {
 	const tab = page.url.searchParams.get("tab");
-	if (tab === "plan" || tab === "context") return tab;
+	if (
+		tab === "plan" ||
+		tab === "context" ||
+		tab === "agents" ||
+		tab === "tasks" ||
+		tab === "memory"
+	)
+		return tab;
 	return undefined;
 });
 

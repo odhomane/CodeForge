@@ -19,19 +19,24 @@ interface ChartItem {
 const totalCount = $derived(data.reduce((s, d) => s + d.count, 0));
 
 const chartData: ChartItem[] = $derived(
-	data.map((item) => ({
-		label: item.name,
-		value: item.count,
-		percentage: totalCount > 0 ? (item.count / totalCount) * 100 : 0,
-	})),
+	data
+		.toSorted((a, b) => b.count - a.count)
+		.slice(0, 10)
+		.map((item) => ({
+			label: item.name,
+			value: item.count,
+			percentage: totalCount > 0 ? (item.count / totalCount) * 100 : 0,
+		})),
 );
+
+const chartHeight = $derived(Math.max(180, chartData.length * 28));
 </script>
 
 <div class="card">
 	<div class="card-header">
 		<span class="card-title">Tool Usage</span>
 	</div>
-	<div class="chart-body">
+	<div class="chart-body" style="height:{chartHeight}px">
 		{#if chartData.length > 0}
 			<BarChart
 				data={chartData}
@@ -41,6 +46,7 @@ const chartData: ChartItem[] = $derived(
 				xScale={scaleLinear()}
 				yScale={scaleBand().padding(0.3)}
 				bandPadding={0.3}
+				padding={{ left: 80, top: 8, right: 16, bottom: 24 }}
 				grid={false}
 				axis={{ tickLabelProps: { fill: 'var(--text-secondary)', style: 'font-family: var(--font-mono); font-size: 11px;' } }}
 				rule={false}
@@ -84,7 +90,6 @@ const chartData: ChartItem[] = $derived(
 
 <style>
 	.chart-body {
-		height: 220px;
 		padding: 4px 0;
 	}
 	.empty {

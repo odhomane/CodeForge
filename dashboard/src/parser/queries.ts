@@ -26,6 +26,7 @@ export interface SessionListItem {
 	timeStart: string | null;
 	timeEnd: string | null;
 	fileSize: number;
+	agentCount: number;
 }
 
 export interface SearchResult {
@@ -200,7 +201,7 @@ export function queryProjects(db: Database): Array<{
 			COALESCE(SUM(s.cache_read_tokens), 0) as cache_read_tokens,
 			MAX(s.time_end) as last_activity
 		FROM projects p
-		LEFT JOIN sessions s ON s.project_id = p.encoded_name
+		LEFT JOIN sessions s ON s.project_id = p.encoded_name AND (s.parent_session_id IS NULL OR s.parent_session_id = s.session_id)
 		GROUP BY p.encoded_name
 		ORDER BY last_activity DESC NULLS LAST
 	`)
@@ -270,7 +271,7 @@ export function queryProjectDetail(
 		SELECT session_id, models, input_tokens, output_tokens,
 			cache_creation_tokens, cache_read_tokens,
 			message_count, time_start, time_end
-		FROM sessions WHERE project_id = ?
+		FROM sessions WHERE project_id = ? AND (parent_session_id IS NULL OR parent_session_id = session_id)
 	`)
 		.all(projectId) as Array<{
 		session_id: string;
@@ -342,6 +343,10 @@ export function querySessions(
 	const conditions: string[] = [];
 	const params: (string | number)[] = [];
 
+	conditions.push(
+		"(s.parent_session_id IS NULL OR s.parent_session_id = s.session_id)",
+	);
+
 	if (filters.project) {
 		conditions.push("s.project_id = ?");
 		params.push(filters.project);
@@ -371,7 +376,8 @@ export function querySessions(
 			s.slug, s.team_name, s.cwd, s.git_branch, s.models,
 			s.input_tokens, s.output_tokens,
 			s.cache_creation_tokens, s.cache_read_tokens,
-			s.message_count, s.time_start, s.time_end, s.file_size
+			s.message_count, s.time_start, s.time_end, s.file_size,
+			(SELECT COUNT(*) FROM subagents sa WHERE sa.parent_session_id = s.session_id) as agent_count
 		FROM sessions s
 		JOIN projects p ON p.encoded_name = s.project_id
 		${where}
@@ -395,6 +401,7 @@ export function querySessions(
 		time_start: string | null;
 		time_end: string | null;
 		file_size: number;
+		agent_count: number;
 	}>;
 
 	return {
@@ -415,6 +422,7 @@ export function querySessions(
 			timeStart: row.time_start,
 			timeEnd: row.time_end,
 			fileSize: row.file_size,
+			agentCount: row.agent_count,
 		})),
 		meta: { total, limit, offset, hasMore: offset + limit < total },
 	};
@@ -528,6 +536,20 @@ export function querySessionDetail(
 		fileSize: row.file_size,
 		cost,
 	};
+}
+
+export function queryAnalyzedSessionIds(
+	db: Database,
+	sessionIds: string[],
+): Set<string> {
+	if (sessionIds.length === 0) return new Set();
+	const placeholders = sessionIds.map(() => "?").join(", ");
+	const rows = db
+		.prepare(
+			`SELECT DISTINCT session_id FROM memory_runs WHERE session_id IN (${placeholders}) AND run_type = 'analysis'`,
+		)
+		.all(...sessionIds) as Array<{ session_id: string }>;
+	return new Set(rows.map((r) => r.session_id));
 }
 
 export function querySessionMessages(
@@ -720,7 +742,7 @@ export function queryGlobalAnalytics(
 	const dailyOutputMap = new Map<string, number>();
 
 	for (const row of dailyRows) {
-		dailyActivity[row.day] = row.session_count;
+		dailyActivity[row.day] = row.input + row.output + row.cache_read;
 		dailyTokenBreakdown[row.day] = {
 			input: row.input,
 			output: row.output,
@@ -830,11 +852,12 @@ export function queryGlobalAnalytics(
 	const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 	const hourlyRows = db
 		.prepare(`
-		SELECT s.time_start FROM sessions s
+		SELECT s.time_start, (s.input_tokens + s.output_tokens + s.cache_read_tokens) as total_tokens
+		FROM sessions s
 		${sessionWhere}
 		${sessionWhere ? "AND" : "WHERE"} s.time_start IS NOT NULL
 	`)
-		.all(...params) as Array<{ time_start: string }>;
+		.all(...params) as Array<{ time_start: string; total_tokens: number }>;
 
 	const hourlyActivity: Record<string, number> = {};
 	for (const row of hourlyRows) {
@@ -842,7 +865,7 @@ export function queryGlobalAnalytics(
 		const dayName = dayNames[d.getDay()];
 		const hour = String(d.getHours()).padStart(2, "0");
 		const key = `${dayName}-${hour}`;
-		hourlyActivity[key] = (hourlyActivity[key] ?? 0) + 1;
+		hourlyActivity[key] = (hourlyActivity[key] ?? 0) + row.total_tokens;
 	}
 
 	// --- Tool usage ---
@@ -2492,6 +2515,7 @@ export function queryObservations(
 	content: string;
 	key: string;
 	evidence: string | null;
+	suggestedMemory: string | null;
 	count: number;
 	firstSeenRunId: string;
 	lastSeenRunId: string;
@@ -2530,7 +2554,7 @@ export function queryObservations(
 
 	const rows = db
 		.prepare(
-			`SELECT id, project_id, category, content, key, evidence, count,
+			`SELECT id, project_id, category, content, key, evidence, suggested_memory, count,
 				first_seen_run_id, last_seen_run_id, first_seen_session_id,
 				last_seen_session_id, sessions_since_last_seen, status,
 				promoted_to_memory_id, created_at, updated_at
@@ -2555,6 +2579,7 @@ export function queryObservations(
 		promoted_to_memory_id: number | null;
 		created_at: string;
 		updated_at: string;
+		suggested_memory: string | null;
 	}>;
 
 	return {
@@ -2565,6 +2590,7 @@ export function queryObservations(
 			content: r.content,
 			key: r.key,
 			evidence: r.evidence,
+			suggestedMemory: r.suggested_memory,
 			count: r.count,
 			firstSeenRunId: r.first_seen_run_id,
 			lastSeenRunId: r.last_seen_run_id,
@@ -2819,36 +2845,37 @@ export function insertObservation(
 		content: string;
 		key: string;
 		evidence?: string | null;
+		suggestedMemory?: string | null;
 		runId: string;
 		sessionId?: string | null;
 	},
 ): number {
 	const now = new Date().toISOString();
-	const result = db
-		.prepare(
-			`INSERT INTO observations (project_id, category, content, key, evidence, count, first_seen_run_id, last_seen_run_id, first_seen_session_id, last_seen_session_id, status, created_at, updated_at)
-			VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, 'active', ?, ?)
+	db.prepare(
+		`INSERT INTO observations (project_id, category, content, key, evidence, suggested_memory, count, first_seen_run_id, last_seen_run_id, first_seen_session_id, last_seen_session_id, status, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, 'active', ?, ?)
 			ON CONFLICT(project_id, key) DO UPDATE SET
 				count = count + 1,
 				content = excluded.content,
+				suggested_memory = excluded.suggested_memory,
 				last_seen_run_id = excluded.last_seen_run_id,
 				last_seen_session_id = excluded.last_seen_session_id,
 				sessions_since_last_seen = 0,
 				updated_at = excluded.updated_at`,
-		)
-		.run(
-			obs.projectId,
-			obs.category,
-			obs.content,
-			obs.key,
-			obs.evidence ?? null,
-			obs.runId,
-			obs.runId,
-			obs.sessionId ?? null,
-			obs.sessionId ?? null,
-			now,
-			now,
-		);
+	).run(
+		obs.projectId,
+		obs.category,
+		obs.content,
+		obs.key,
+		obs.evidence ?? null,
+		obs.suggestedMemory ?? null,
+		obs.runId,
+		obs.runId,
+		obs.sessionId ?? null,
+		obs.sessionId ?? null,
+		now,
+		now,
+	);
 	// Return the id of the inserted/updated row
 	const row = db
 		.prepare("SELECT id FROM observations WHERE project_id = ? AND key = ?")
@@ -2861,17 +2888,31 @@ export function updateObservationReinforcement(
 	id: number,
 	runId: string,
 	sessionId?: string | null,
+	suggestedMemory?: string | null,
 ): void {
 	const now = new Date().toISOString();
-	db.prepare(
-		`UPDATE observations SET
-			count = count + 1,
-			last_seen_run_id = ?,
-			last_seen_session_id = COALESCE(?, last_seen_session_id),
-			sessions_since_last_seen = 0,
-			updated_at = ?
-		WHERE id = ?`,
-	).run(runId, sessionId ?? null, now, id);
+	if (suggestedMemory !== undefined) {
+		db.prepare(
+			`UPDATE observations SET
+				count = count + 1,
+				last_seen_run_id = ?,
+				last_seen_session_id = COALESCE(?, last_seen_session_id),
+				sessions_since_last_seen = 0,
+				suggested_memory = ?,
+				updated_at = ?
+			WHERE id = ?`,
+		).run(runId, sessionId ?? null, suggestedMemory, now, id);
+	} else {
+		db.prepare(
+			`UPDATE observations SET
+				count = count + 1,
+				last_seen_run_id = ?,
+				last_seen_session_id = COALESCE(?, last_seen_session_id),
+				sessions_since_last_seen = 0,
+				updated_at = ?
+			WHERE id = ?`,
+		).run(runId, sessionId ?? null, now, id);
+	}
 }
 
 export function incrementStaleness(
@@ -2915,13 +2956,16 @@ export function insertMemory(
 	db: Database,
 	memory: {
 		projectId: string;
-		category: string;
+		category: string | string[];
 		content: string;
 		sourceObservationIds?: number[];
 		confidence?: number;
 		status?: string;
 	},
 ): number {
+	const categoryStr = Array.isArray(memory.category)
+		? [...new Set(memory.category)].join(",")
+		: memory.category;
 	const now = new Date().toISOString();
 	const result = db
 		.prepare(
@@ -2930,7 +2974,7 @@ export function insertMemory(
 		)
 		.run(
 			memory.projectId,
-			memory.category,
+			categoryStr,
 			memory.content,
 			memory.sourceObservationIds
 				? JSON.stringify(memory.sourceObservationIds)
@@ -3050,10 +3094,11 @@ export function queryObservationsForProject(
 	count: number;
 	sessionsSinceLastSeen: number;
 	status: string;
+	suggestedMemory: string | null;
 }> {
 	const rows = db
 		.prepare(
-			`SELECT id, category, content, key, count, sessions_since_last_seen, status
+			`SELECT id, category, content, key, count, sessions_since_last_seen, status, suggested_memory
 			FROM observations
 			WHERE project_id = ? AND status = 'active'
 			ORDER BY count DESC`,
@@ -3066,6 +3111,7 @@ export function queryObservationsForProject(
 		count: number;
 		sessions_since_last_seen: number;
 		status: string;
+		suggested_memory: string | null;
 	}>;
 
 	return rows.map((r) => ({
@@ -3076,5 +3122,67 @@ export function queryObservationsForProject(
 		count: r.count,
 		sessionsSinceLastSeen: r.sessions_since_last_seen,
 		status: r.status,
+		suggestedMemory: r.suggested_memory,
 	}));
+}
+
+export function queryApprovedMemoriesForProject(
+	db: Database,
+	projectId: string,
+): Array<{
+	id: number;
+	category: string;
+	content: string;
+}> {
+	return db
+		.prepare(
+			`SELECT id, category, content FROM memories
+			WHERE project_id = ? AND status = 'approved'
+			ORDER BY category, id`,
+		)
+		.all(projectId) as Array<{
+		id: number;
+		category: string;
+		content: string;
+	}>;
+}
+
+export function queryObservationStatsByProject(db: Database): Array<{
+	projectId: string;
+	projectName: string;
+	activeObservations: number;
+}> {
+	const rows = db
+		.prepare(`
+		SELECT o.project_id, p.name, COUNT(*) as cnt
+		FROM observations o
+		JOIN projects p ON p.encoded_name = o.project_id
+		WHERE o.status = 'active'
+		GROUP BY o.project_id
+	`)
+		.all() as Array<{ project_id: string; name: string; cnt: number }>;
+
+	return rows.map((r) => ({
+		projectId: r.project_id,
+		projectName: r.name,
+		activeObservations: r.cnt,
+	}));
+}
+
+export function queryUnanalyzedSessions(
+	db: Database,
+	projectId: string,
+): string[] {
+	const rows = db
+		.prepare(`
+		SELECT s.session_id FROM sessions s
+		WHERE s.project_id = ? AND (s.parent_session_id IS NULL OR s.parent_session_id = s.session_id)
+		AND s.session_id NOT IN (
+			SELECT DISTINCT session_id FROM memory_runs
+			WHERE session_id IS NOT NULL AND run_type = 'analysis'
+		)
+		ORDER BY s.time_end DESC
+	`)
+		.all(projectId) as Array<{ session_id: string }>;
+	return rows.map((r) => r.session_id);
 }

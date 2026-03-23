@@ -1,6 +1,6 @@
 <script lang="ts">
 import Skeleton from "$lib/components/shared/Skeleton.svelte";
-import { formatCost } from "$lib/utils/format.js";
+import { formatCost, formatTokens } from "$lib/utils/format.js";
 
 let {
 	totalSessions = 0,
@@ -31,9 +31,14 @@ let {
 
 const cards = $derived([
 	{
-		label: "Sessions",
-		value: String(totalSessions),
-		delta: weekOverWeek?.sessions,
+		label: "Total Tokens",
+		value: formatTokens(totalTokens),
+		delta: weekOverWeek?.tokens,
+	},
+	{
+		label: "Total Cost",
+		value: formatCost(totalCost),
+		delta: weekOverWeek?.cost,
 	},
 	{
 		label: "Avg Cost/Session",
@@ -41,11 +46,6 @@ const cards = $derived([
 			avgCostPerSession ?? (totalSessions > 0 ? totalCost / totalSessions : 0),
 		),
 		delta: weekOverWeek?.tokens,
-	},
-	{
-		label: "Total Cost",
-		value: formatCost(totalCost),
-		delta: weekOverWeek?.cost,
 	},
 	{
 		label: "Cache Savings",

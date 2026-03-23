@@ -205,7 +205,9 @@
 				"projectManager.git.maxDepthRecursion": 2,
 				"projectManager.showProjectNameInStatusBar": true,
 				"projectManager.openInNewWindowWhenClickingInStatusBar": false,
-				"projectManager.projectsLocation": "/workspaces/.config/project-manager"
+				"projectManager.projectsLocation": "/workspaces/.config/project-manager",
+				"git.autofetch": false,
+				"git.autorefresh": false
 			},
 			"extensions": [
 				"wenbopan.vscode-terminal-osc-notifier",

@@ -6,10 +6,21 @@ import {
 	type Observation,
 } from "$lib/stores/memory.svelte.js";
 import { formatRelativeTime } from "$lib/utils/format.js";
+import ApproveModal from "./ApproveModal.svelte";
 import ObservationHistory from "./ObservationHistory.svelte";
 
+let {
+	projects = [],
+	onprojectchange,
+}: {
+	projects?: Array<{ id: string; name: string }>;
+	onprojectchange?: (e: Event) => void;
+} = $props();
+
 let categoryFilter = $state("");
+let sortBy = $state<"count" | "recent">("count");
 let expandedHistoryId = $state<number | null>(null);
+let approveTarget = $state<Observation | null>(null);
 
 function toggleHistory(id: number) {
 	expandedHistoryId = expandedHistoryId === id ? null : id;
@@ -26,6 +37,11 @@ let filtered = $derived.by(() => {
 	let list = memoryStore.observations;
 	if (categoryFilter) list = list.filter((o) => o.category === categoryFilter);
 	if (statusFilter) list = list.filter((o) => o.status === statusFilter);
+	list = [...list].sort((a, b) =>
+		sortBy === "count"
+			? b.count - a.count
+			: new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+	);
 	return list;
 });
 
@@ -53,6 +69,12 @@ function statusClass(status: Observation["status"]): string {
 
 <div class="observations-tab">
 	<div class="filters-row">
+		<select class="filter-select" onchange={onprojectchange} value={memoryStore.projectFilter ?? ""}>
+			<option value="">All Projects</option>
+			{#each projects as project}
+				<option value={project.id}>{project.name}</option>
+			{/each}
+		</select>
 		<select class="filter-select" bind:value={categoryFilter}>
 			<option value="">All Categories</option>
 			{#each categories as cat}
@@ -66,6 +88,10 @@ function statusClass(status: Observation["status"]): string {
 			<option value="promoted">Promoted</option>
 			<option value="consolidated">Consolidated</option>
 		</select>
+		<select class="filter-select" bind:value={sortBy}>
+			<option value="count">Most Frequent</option>
+			<option value="recent">Most Recent</option>
+		</select>
 	</div>
 
 	{#if filtered.length === 0}
@@ -75,6 +101,12 @@ function statusClass(status: Observation["status"]): string {
 			{#each filtered as obs (obs.id)}
 				<div class="obs-card">
 					<div class="obs-header">
+						{#if !memoryStore.projectFilter}
+							{@const project = projects.find((p) => p.id === obs.projectId)}
+							{#if project}
+								<span class="project-badge">{project.name}</span>
+							{/if}
+						{/if}
 						<span class="category-badge">{obs.category}</span>
 						<span class="count-badge {countClass(obs.count)}">{obs.count}x</span>
 						<span class="status-badge {statusClass(obs.status)}">{obs.status}</span>
@@ -91,7 +123,7 @@ function statusClass(status: Observation["status"]): string {
 						{/if}
 						<div class="obs-actions">
 							{#if obs.status === "active"}
-								<button class="action-btn approve-btn" onclick={() => approveObservation(obs.id)}>Approve</button>
+								<button class="action-btn approve-btn" onclick={() => { approveTarget = obs; }}>Approve</button>
 								<button class="action-btn dismiss-btn" onclick={() => dismissObservation(obs.id)}>Dismiss</button>
 							{/if}
 							<button class="action-btn history-btn" onclick={(e) => { e.stopPropagation(); toggleHistory(obs.id); }}>
@@ -105,6 +137,17 @@ function statusClass(status: Observation["status"]): string {
 				</div>
 			{/each}
 		</div>
+	{/if}
+
+	{#if approveTarget}
+		<ApproveModal
+			observation={approveTarget}
+			onconfirm={(content, tags) => {
+				if (approveTarget) approveObservation(approveTarget.id, content, tags);
+				approveTarget = null;
+			}}
+			oncancel={() => { approveTarget = null; }}
+		/>
 	{/if}
 </div>
 
@@ -148,6 +191,16 @@ function statusClass(status: Observation["status"]): string {
 		align-items: center;
 		gap: 8px;
 		margin-bottom: 8px;
+	}
+
+	.project-badge {
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--blue);
+		background: rgba(59, 130, 246, 0.12);
+		padding: 2px 8px;
+		border-radius: 4px;
 	}
 
 	.category-badge {

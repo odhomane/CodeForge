@@ -209,6 +209,7 @@ CREATE TABLE IF NOT EXISTS observations (
   content TEXT NOT NULL,
   key TEXT NOT NULL,
   evidence TEXT,
+  suggested_memory TEXT,
   count INTEGER DEFAULT 1,
   first_seen_run_id TEXT NOT NULL,
   last_seen_run_id TEXT NOT NULL,
@@ -300,6 +301,21 @@ export function openDatabase(dbPath: string): Database {
 			db.exec("ALTER TABLE sessions ADD COLUMN parent_session_id TEXT;");
 			db.exec("ALTER TABLE sessions ADD COLUMN agent_name TEXT;");
 			db.exec("ALTER TABLE sessions ADD COLUMN agent_type TEXT;");
+		}
+	} catch {
+		// Table may not exist yet — that's fine
+	}
+
+	// Migrate observations table for suggested_memory column
+	try {
+		const obsCols = db
+			.prepare("PRAGMA table_info(observations)")
+			.all() as Array<{ name: string }>;
+		if (
+			obsCols.length > 0 &&
+			!obsCols.some((c) => c.name === "suggested_memory")
+		) {
+			db.exec("ALTER TABLE observations ADD COLUMN suggested_memory TEXT;");
 		}
 	} catch {
 		// Table may not exist yet — that's fine

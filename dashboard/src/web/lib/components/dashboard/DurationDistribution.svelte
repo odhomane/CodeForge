@@ -25,13 +25,15 @@ const chartData: ChartItem[] = $derived(
 		percentage: totalCount > 0 ? (item.count / totalCount) * 100 : 0,
 	})),
 );
+
+const chartHeight = $derived(Math.max(160, chartData.length * 32));
 </script>
 
 <div class="card">
 	<div class="card-header">
 		<span class="card-title">Session Duration</span>
 	</div>
-	<div class="chart-body">
+	<div class="chart-body" style="height:{chartHeight}px">
 		{#if chartData.length > 0}
 			<BarChart
 				data={chartData}
@@ -41,6 +43,7 @@ const chartData: ChartItem[] = $derived(
 				xScale={scaleLinear()}
 				yScale={scaleBand().padding(0.3)}
 				bandPadding={0.3}
+				padding={{ left: 72, top: 8, right: 16, bottom: 24 }}
 				grid={false}
 				axis={{ tickLabelProps: { fill: 'var(--text-dim)', style: 'font-family: var(--font-mono); font-size: 11px;' } }}
 				rule={false}
@@ -84,7 +87,6 @@ const chartData: ChartItem[] = $derived(
 
 <style>
 	.chart-body {
-		height: 200px;
 		padding: 4px 0;
 	}
 	.empty {

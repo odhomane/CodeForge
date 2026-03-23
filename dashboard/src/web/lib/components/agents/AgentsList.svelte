@@ -6,6 +6,11 @@ import {
 	fetchAgents,
 	type SubagentSession,
 } from "$lib/stores/agents.svelte.js";
+import {
+	formatDuration,
+	formatRelativeTime,
+	formatTokens,
+} from "$lib/utils/format.js";
 
 let selectedIndex = $state(0);
 let loaded = $state(false);
@@ -17,32 +22,11 @@ $effect(() => {
 	}
 });
 
-function formatTokens(n: number): string {
-	if (!n) return "0";
-	if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-	if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-	return String(n);
-}
-
-function formatDuration(start: string | null, end: string | null): string {
+function agentDuration(start: string | null, end: string | null): string {
 	if (!start) return "\u2014";
-	const s = new Date(start).getTime();
-	const e = end ? new Date(end).getTime() : Date.now();
-	const sec = Math.round((e - s) / 1000);
-	if (sec < 60) return `${sec}s`;
-	const min = Math.floor(sec / 60);
-	if (min < 60) return `${min}m ${sec % 60}s`;
-	return `${Math.floor(min / 60)}h ${min % 60}m`;
-}
-
-function timeAgo(ts: string | null): string {
-	if (!ts) return "\u2014";
-	const diff = Date.now() - new Date(ts).getTime();
-	const mins = Math.floor(diff / 60000);
-	if (mins < 60) return `${mins}m ago`;
-	const hrs = Math.floor(mins / 60);
-	if (hrs < 24) return `${hrs}h ago`;
-	return `${Math.floor(hrs / 24)}d ago`;
+	const ms =
+		(end ? new Date(end).getTime() : Date.now()) - new Date(start).getTime();
+	return formatDuration(ms);
 }
 
 function isInputFocused(): boolean {
@@ -182,13 +166,13 @@ $effect(() => {
 									>
 									<td>{agent.message_count ?? 0}</td>
 									<td
-										>{formatDuration(
+										>{agentDuration(
 											agent.time_start,
 											agent.time_end,
 										)}</td
 									>
 									<td class="td-muted"
-										>{timeAgo(agent.time_start)}</td
+										>{formatRelativeTime(agent.time_start ?? new Date().toISOString())}</td
 									>
 								</tr>
 							{/each}
