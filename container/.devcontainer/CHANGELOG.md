@@ -22,6 +22,20 @@
 ### Skills
 - Added `agent-browser` skill to skill-engine plugin — guides headless browser automation with CLI reference, workflow patterns, and authentication
 
+### Scope Guard
+
+- Fix false positives blocking writes to system paths (`/dev/null`, `/usr/`, `/etc/`, `$HOME/`) — scope guard now only enforces isolation between workspace projects
+- Remove complex system-command exemption logic (no longer needed)
+
+### Dangerous Command Blocker
+
+- Remove system directory write redirect blocks (`> /usr/`, `> /etc/`, `> /bin/`, `> /sbin/`) — caused false positives on text content in command arguments (e.g. PR body text containing paths); write location enforcement is the scope guard's responsibility
+
+### CLI Integration
+
+- Add codeforge-cli devcontainer feature — installs the CodeForge CLI (`codeforge` command) globally via npm
+- Remove dead `codeforge` alias from setup-aliases.sh (was pointing to obsolete `setup.js`)
+
 ### Windows Compatibility
 
 - Fix `claude-code-native` install failure on Windows/macOS Docker Desktop — installer now falls back to `HOME` override when `su` is unavailable
