@@ -27,6 +27,7 @@ Config files deploy via `.codeforge/file-manifest.json` on every container start
 | `ccw` | Claude Code with writing system prompt |
 | `cc-orc` | Claude Code in orchestrator mode (delegation-first) |
 | `ccms` | Session history search _(disabled — requires Rust toolchain; uncomment in devcontainer.json to enable)_ |
+| `codeforge proxy` | Launch Claude Code through mitmproxy — inspect API traffic in browser (port 8081) |
 | `ccusage` / `ccburn` | Token usage analysis / burn rate |
 | `agent-browser` | Headless Chromium (Playwright-based) |
 | `check-setup` | Verify CodeForge setup health |
@@ -79,7 +80,8 @@ The `~/.claude/` directory is backed by a Docker named volume (`codeforge-claude
 5. **Disable features**: Set `"version": "none"` in the feature's config
 6. **Disable setup steps**: Set flags to `false` in `.env`
 7. **Customize status bar**: Edit `.codeforge/config/ccstatusline-settings.json`
-8. **Disable individual hooks**: Add script name (without `.py`) to `disabled` array in `.codeforge/config/disabled-hooks.json` — takes effect immediately, no restart needed
+8. **Lock Claude Code version**: Set `CLAUDE_VERSION_LOCK=2.1.80` in `.env` — the update script installs that exact version on container start instead of updating to latest. Unset to resume auto-updates.
+9. **Disable individual hooks**: Add script name (without `.py`) to `disabled` array in `.codeforge/config/disabled-hooks.json` — takes effect immediately, no restart needed
 
 ## Plugin Development Notes
 
