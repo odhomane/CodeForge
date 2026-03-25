@@ -12,6 +12,14 @@ import json
 import re
 import shlex
 import sys
+import os
+
+# Hook gate — check .codeforge/config/disabled-hooks.json
+_dh = os.path.join(os.getcwd(), ".codeforge", "config", "disabled-hooks.json")
+if os.path.exists(_dh):
+    with open(_dh) as _f:
+        if os.path.basename(__file__).replace(".py", "") in json.load(_f).get("disabled", []):
+            sys.exit(0)
 
 # Same patterns as guard-protected.py
 PROTECTED_PATTERNS = [

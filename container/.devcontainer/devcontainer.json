@@ -123,12 +123,12 @@
 		},
 		// Uncomment to add ccms (requires Rust):
 		// "./features/ccms": {},
-		"./features/claude-session-dashboard": {
-			"version": "latest",
-			"port": "7847",
-			"shells": "both",
-			"username": "automatic"
-		},
+		// "./features/claude-session-dashboard": {
+		// 	"version": "latest",
+		// 	"port": "7847",
+		// 	"shells": "both",
+		// 	"username": "automatic"
+		// },
 		"./features/ast-grep": {},
 		"./features/tree-sitter": {},
 		"./features/lsp-servers": {},

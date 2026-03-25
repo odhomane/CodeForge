@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Hooks
+- **Per-hook disable mechanism** — add script names to `.codeforge/config/disabled-hooks.json` to disable individual hooks without disabling the entire plugin. Takes effect immediately, no restart needed.
+- Disabled by default: `git-state-injector`, `ticket-linker`, `spec-reminder`
+
 ### Dashboard
 - **First-party dashboard** — replaced third-party `claude-session-dashboard` npm package with `codeforge-dashboard` (built from monorepo `dashboard/` package)
 - Auto-launch on container start via poststart hook (controllable with `autostart` option)

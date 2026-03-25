@@ -18,6 +18,13 @@ import subprocess
 import sys
 import time
 
+# Hook gate — check .codeforge/config/disabled-hooks.json
+_dh = os.path.join(os.getcwd(), ".codeforge", "config", "disabled-hooks.json")
+if os.path.exists(_dh):
+    with open(_dh) as _f:
+        if os.path.basename(__file__).replace(".py", "") in json.load(_f).get("disabled", []):
+            sys.exit(0)
+
 GIT_CMD_TIMEOUT = 5
 COOLDOWN_SECS = 300  # 5 minutes between reminders per session
 

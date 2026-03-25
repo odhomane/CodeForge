@@ -10,6 +10,7 @@ CodeForge devcontainer for AI-assisted development with Claude Code.
 | `.codeforge/config/main-system-prompt.md` | System prompt defining assistant behavior |
 | `.codeforge/config/orchestrator-system-prompt.md` | Orchestrator mode prompt (delegation-first) |
 | `.codeforge/config/ccstatusline-settings.json` | Status bar widget layout (deployed to ~/.config/ccstatusline/) |
+| `.codeforge/config/disabled-hooks.json` | Disable individual plugin hooks by script name |
 | `.codeforge/file-manifest.json` | Controls which config files deploy and when |
 | `devcontainer.json` | Container definition: image, features, mounts |
 | `.env` | Boolean flags controlling setup steps |
@@ -78,6 +79,7 @@ The `~/.claude/` directory is backed by a Docker named volume (`codeforge-claude
 5. **Disable features**: Set `"version": "none"` in the feature's config
 6. **Disable setup steps**: Set flags to `false` in `.env`
 7. **Customize status bar**: Edit `.codeforge/config/ccstatusline-settings.json`
+8. **Disable individual hooks**: Add script name (without `.py`) to `disabled` array in `.codeforge/config/disabled-hooks.json` — takes effect immediately, no restart needed
 
 ## Plugin Development Notes
 
