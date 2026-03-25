@@ -23,6 +23,7 @@ import { registerPluginHooksCommand } from "./commands/plugin/hooks.js";
 import { registerPluginListCommand } from "./commands/plugin/list.js";
 import { registerPluginShowCommand } from "./commands/plugin/show.js";
 import { registerPluginSkillsCommand } from "./commands/plugin/skills.js";
+import { registerProxyCommand } from "./commands/proxy.js";
 import { registerListCommand } from "./commands/session/list.js";
 import { registerSearchCommand } from "./commands/session/search.js";
 import { registerShowCommand } from "./commands/session/show.js";
@@ -100,6 +101,8 @@ registerContainerExecCommand(container);
 registerContainerLsCommand(container);
 registerContainerShellCommand(container);
 
+registerProxyCommand(program);
+
 // Proxy middleware: when outside container and not --local, proxy existing commands into container
 program.hook("preAction", async (_thisCommand, actionCommand) => {
 	const opts = program.opts();
@@ -112,7 +115,7 @@ program.hook("preAction", async (_thisCommand, actionCommand) => {
 	while (cmd.parent && cmd.parent !== program) {
 		cmd = cmd.parent;
 	}
-	if (cmd.name() === "container") return;
+	if (cmd.name() === "container" || cmd.name() === "proxy") return;
 
 	// Proxy into running container
 	try {
