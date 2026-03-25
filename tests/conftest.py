@@ -10,6 +10,7 @@ from pathlib import Path
 # Root of the plugin scripts
 PLUGINS_ROOT = (
     Path(__file__).resolve().parent.parent
+    / "container"
     / ".devcontainer"
     / "plugins"
     / "devs-marketplace"

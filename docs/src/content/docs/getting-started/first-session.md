@@ -85,14 +85,14 @@ From the terminal (not inside a Claude session), you can verify what's available
 # List all installed tools and their versions
 cc-tools
 
-# Search past session history (ccms is currently disabled — replacement pending)
+# Search past session history (ccms is currently disabled — replaced by `codeforge session search`)
 # ccms "what did we work on"
 
 # Check API token usage
 ccusage
 
 # Open the session analytics dashboard
-claude-dashboard
+codeforge-dashboard
 ```
 
 ## Agents and Skills

@@ -46,7 +46,7 @@ ccw
 ### ccms — Session History Search
 
 :::caution[Currently Disabled]
-The `ccms` feature is currently commented out in `devcontainer.json`. A replacement tool is pending. The documentation below is preserved for reference.
+The `ccms` feature is currently commented out in `devcontainer.json`. It has been replaced by `codeforge session search` (part of the CodeForge CLI). The documentation below is preserved for reference.
 :::
 
 Search through your Claude Code session history (JSONL files) with boolean queries, role filtering, and time scoping. Built in Rust for fast searching across large session archives.
@@ -103,13 +103,13 @@ Analyze token consumption patterns across sessions to understand usage efficienc
 ccburn
 ```
 
-### claude-dashboard
+### codeforge-dashboard
 
 A web-based session monitoring dashboard that provides real-time visibility into active Claude sessions, resource usage, and session history. Runs on port 7847.
 
 ```bash
 # Launch the dashboard
-claude-dashboard
+codeforge-dashboard
 ```
 
 ### claude-monitor
@@ -239,7 +239,7 @@ CodeForge uses `uv` as the default Python package manager. It is significantly f
 | 5 | `ccusage` | Session | API usage statistics |
 | 6 | `ccburn` | Session | Token burn analysis |
 | 7 | `ccstatusline` | Session | Terminal statusline |
-| 8 | `claude-dashboard` | Session | Web-based session dashboard |
+| 8 | `codeforge-dashboard` | Session | Web-based session dashboard |
 | 9 | `claude-monitor` | Session | Real-time session monitor |
 | 10 | `agent-browser` | Session | Headless browser for agents |
 | 11 | `check-setup` | Session | Installation health check |

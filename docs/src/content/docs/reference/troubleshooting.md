@@ -168,7 +168,7 @@ Any local feature can be disabled without removing it from `devcontainer.json` b
 
 ## Port Conflicts
 
-**Problem: The claude-dashboard or other tools fail to bind their port.**
+**Problem: The codeforge-dashboard or other tools fail to bind their port.**
 
 - CodeForge's session dashboard uses **port 7847** by default. If another service uses that port, change it in `devcontainer.json` under `forwardPorts`.
 - To find what's using a port: `lsof -i :7847` (macOS/Linux) or `netstat -ano | findstr 7847` (Windows).

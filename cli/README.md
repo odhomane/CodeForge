@@ -37,10 +37,12 @@ codeforge session list                  # List recent sessions
 codeforge session show <id>             # Show session details
 ```
 
-### `codeforge task` — Task Search
+### `codeforge task` — Task Management
 
 ```bash
 codeforge task search "query"           # Search tasks across sessions
+codeforge task list                     # List tasks
+codeforge task show <id>                # Show task details
 ```
 
 ### `codeforge plan` — Plan Search

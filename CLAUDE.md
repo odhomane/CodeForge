@@ -27,7 +27,7 @@ Each package has its own `CLAUDE.md` with package-specific development rules:
 - [`container/CLAUDE.md`](container/CLAUDE.md) — changelog, documentation, and configuration rules for the devcontainer package
 - `cli/` — Bun/TypeScript CLI; run `bun test` for tests
 - `docs/` — Astro/Starlight site; run `npm run build` to verify
-- [`dashboard/CLAUDE.md`](dashboard/CLAUDE.md) — Svelte 5 SPA + Bun backend for session analytics
+- [`dashboard/CLAUDE.md`](dashboard/CLAUDE.md) | [`dashboard/README.md`](dashboard/README.md) — Svelte 5 SPA + Bun backend for session analytics
 
 ### Cross-Package Changes
 

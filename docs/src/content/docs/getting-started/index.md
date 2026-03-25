@@ -60,7 +60,7 @@ CodeForge installs a comprehensive toolchain so you never have to stop and insta
 - **Package Managers** — uv (Python), npm, Bun, pip/pipx
 - **Code Intelligence** — tree-sitter, ast-grep, Pyright, TypeScript LSP
 - **Linters and Formatters** — Ruff, Biome, shfmt, ShellCheck, hadolint, dprint
-- **CLI Utilities** — GitHub CLI, Docker, jq, tmux, and CodeForge-specific tools like ccusage and ccburn (ccms currently disabled — replacement pending)
+- **CLI Utilities** — GitHub CLI, Docker, jq, tmux, and CodeForge-specific tools like ccusage and ccburn (ccms currently disabled — replaced by `codeforge session search`)
 
 See the [Features Overview](../features/) for the complete reference.
 

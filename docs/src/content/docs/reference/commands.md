@@ -35,11 +35,11 @@ Commands for session analysis, usage tracking, and system monitoring.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `ccms` | Search Claude Code session history. Supports boolean queries, role filtering, time scoping, and project isolation. _(currently disabled — replacement pending)_ | `ccms --project "$(pwd)" "auth approach"` |
+| `ccms` | Search Claude Code session history. Supports boolean queries, role filtering, time scoping, and project isolation. _(currently disabled — replaced by `codeforge session search`)_ | `ccms --project "$(pwd)" "auth approach"` |
 | `ccusage` | View Claude API usage statistics | `ccusage` |
 | `ccburn` | Analyze token burn rate and consumption patterns with pace indicators | `ccburn` |
 | `ccstatusline` | Terminal status line displaying session metrics, git state, token usage, and burn rate | (runs automatically) |
-| `claude-dashboard` | Web-based session monitoring dashboard on port 7847 with cost estimates and activity heatmaps | `claude-dashboard` |
+| `codeforge-dashboard` | Web-based session monitoring dashboard on port 7847 with cost estimates and activity heatmaps | `codeforge-dashboard` |
 | `claude-monitor` | Real-time Claude session activity monitor | `claude-monitor` |
 | `agent-browser` | Headless Chromium browser for agent automation with accessibility tree snapshots | `agent-browser` |
 | `check-setup` | Verify CodeForge installation health -- checks tools, config, and aliases | `check-setup` |
@@ -154,7 +154,7 @@ The `codeforge` command provides development workflow tools. When run outside th
 | Command Group | Subcommands | Description |
 |---------------|-------------|-------------|
 | `codeforge session` | `search`, `list`, `show` | Search and browse Claude Code session history |
-| `codeforge task` | `search` | Search tasks |
+| `codeforge task` | `search`, `list`, `show` | Search and browse tasks |
 | `codeforge plan` | `search` | Search plans |
 | `codeforge plugin` | `list`, `show`, `enable`, `disable`, `hooks`, `agents`, `skills` | Manage Claude Code plugins |
 | `codeforge config` | `show`, `apply` | View and deploy configuration |
