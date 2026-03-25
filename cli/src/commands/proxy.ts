@@ -4,6 +4,7 @@ import { isInsideContainer } from "../utils/context.js";
 import {
 	ensureCaCert,
 	findMitmproxy,
+	generatePassword,
 	installCaToSystem,
 	installMitmproxy,
 	isCaInstalled,
@@ -19,7 +20,7 @@ export function registerProxyCommand(parent: Command): void {
 		.description("Launch Claude Code through mitmproxy for traffic inspection")
 		.option("--proxy-port <port>", "mitmproxy listen port", "8080")
 		.option("--web-port <port>", "mitmweb UI port", "8081")
-		.option("--web-host <host>", "mitmweb bind address", "0.0.0.0")
+		.option("--web-host <host>", "mitmweb bind address", "127.0.0.1")
 		.option("--setup", "Install mitmproxy and CA certificate only")
 		.option("--no-web", "Use mitmdump instead of mitmweb (headless)")
 		.allowUnknownOption(true)
@@ -86,11 +87,13 @@ export function registerProxyCommand(parent: Command): void {
 				const claudeArgs =
 					dashDashIndex !== -1 ? process.argv.slice(dashDashIndex + 1) : [];
 
+				const password = generatePassword();
+
 				let proxyProc;
 				if (options.web) {
-					proxyProc = startMitmweb({ proxyPort, webPort, webHost });
+					proxyProc = startMitmweb({ proxyPort, webPort, webHost, password });
 					console.error(
-						`${chalk.green("✓")} mitmweb UI: http://localhost:${webPort}`,
+						`${chalk.green("✓")} mitmweb UI: http://localhost:${webPort} (password: ${password})`,
 					);
 				} else {
 					proxyProc = startMitmdump({ proxyPort });
@@ -105,7 +108,10 @@ export function registerProxyCommand(parent: Command): void {
 				const cleanup = () => {
 					try {
 						proxyProc.kill();
-					} catch {}
+					} catch (err) {
+						const msg = err instanceof Error ? err.message : String(err);
+						console.error(`${chalk.yellow("⚡")} Proxy cleanup: ${msg}`);
+					}
 				};
 				process.on("SIGINT", () => {
 					cleanup();

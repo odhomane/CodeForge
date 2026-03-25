@@ -18,7 +18,7 @@
 ### Hooks
 
 - **Per-hook disable mechanism** — add script names to `.codeforge/config/disabled-hooks.json` to disable individual hooks without disabling the entire plugin. Takes effect immediately, no restart needed.
-- Disabled by default: `git-state-injector`, `ticket-linker`, `spec-reminder`
+- Disabled by default: `git-state-injector`, `ticket-linker`, `spec-reminder`, `commit-reminder`
 
 ### Scope Guard
 

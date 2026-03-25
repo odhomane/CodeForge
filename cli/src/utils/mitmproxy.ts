@@ -1,7 +1,15 @@
 import type { Subprocess } from "bun";
+import { randomBytes } from "crypto";
 import { existsSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
+
+/**
+ * Generate a random base64url password for mitmweb session auth.
+ */
+export function generatePassword(): string {
+	return randomBytes(12).toString("base64url");
+}
 
 /**
  * Check if mitmweb is available on PATH.
@@ -47,15 +55,19 @@ export async function ensureCaCert(): Promise<string> {
 		stdout: "pipe",
 		stderr: "pipe",
 	});
-	await new Promise((resolve) => setTimeout(resolve, 2000));
-	proc.kill();
 
-	if (!existsSync(certPath)) {
-		throw new Error(
-			`CA certificate was not generated at ${certPath}. Is mitmproxy installed correctly?`,
-		);
+	for (let i = 0; i < 20; i++) {
+		if (existsSync(certPath)) {
+			proc.kill();
+			return certPath;
+		}
+		await new Promise((resolve) => setTimeout(resolve, 500));
 	}
-	return certPath;
+
+	proc.kill();
+	throw new Error(
+		`CA certificate was not generated at ${certPath} after 10s. Is mitmproxy installed correctly?`,
+	);
 }
 
 /**
@@ -101,6 +113,7 @@ export function startMitmweb(opts: {
 	proxyPort: number;
 	webPort: number;
 	webHost: string;
+	password: string;
 }): Subprocess {
 	return Bun.spawn(
 		[
@@ -116,7 +129,7 @@ export function startMitmweb(opts: {
 			"--set",
 			"connection_strategy=lazy",
 			"--set",
-			"web_password=123",
+			`web_password=${opts.password}`,
 		],
 		{ stdout: "pipe", stderr: "pipe" },
 	);
@@ -141,6 +154,26 @@ export function startMitmdump(opts: { proxyPort: number }): Subprocess {
 }
 
 /**
+ * Build the environment variables needed to route claude through the proxy.
+ */
+export function buildClaudeEnv(
+	proxyPort: number,
+	caCertPath: string,
+): Record<string, string | undefined> {
+	const existingNodeOptions = process.env.NODE_OPTIONS ?? "";
+	const nodeOptions = existingNodeOptions
+		? `${existingNodeOptions} --use-system-ca`
+		: "--use-system-ca";
+
+	return {
+		...process.env,
+		HTTPS_PROXY: `http://127.0.0.1:${proxyPort}`,
+		NODE_EXTRA_CA_CERTS: caCertPath,
+		NODE_OPTIONS: nodeOptions,
+	};
+}
+
+/**
  * Launch claude with proxy env vars. Returns the exit code.
  */
 export async function launchClaude(
@@ -148,34 +181,44 @@ export async function launchClaude(
 	proxyPort: number,
 	caCertPath: string,
 ): Promise<number> {
-	const existingNodeOptions = process.env.NODE_OPTIONS ?? "";
-	const nodeOptions = existingNodeOptions
-		? `${existingNodeOptions} --use-system-ca`
-		: "--use-system-ca";
+	const which = Bun.spawnSync(["which", "claude"], {
+		stdout: "pipe",
+		stderr: "pipe",
+	});
+	if (which.exitCode !== 0) {
+		throw new Error(
+			"claude binary not found on PATH. Is Claude Code installed?",
+		);
+	}
 
 	const cmd = args.length > 0 ? ["claude", ...args] : ["claude"];
 	const proc = Bun.spawn(cmd, {
 		stdout: "inherit",
 		stderr: "inherit",
 		stdin: "inherit",
-		env: {
-			...process.env,
-			HTTPS_PROXY: `http://127.0.0.1:${proxyPort}`,
-			NODE_EXTRA_CA_CERTS: caCertPath,
-			NODE_OPTIONS: nodeOptions,
-		},
+		env: buildClaudeEnv(proxyPort, caCertPath),
 	});
 	return proc.exited;
 }
 
 /**
- * Check if a port is currently in use.
+ * Check if a port is currently in use by attempting to bind it.
  */
 export async function isPortInUse(port: number): Promise<boolean> {
-	const proc = Bun.spawn(["lsof", "-i", `:${port}`], {
-		stdout: "pipe",
-		stderr: "pipe",
-	});
-	const exitCode = await proc.exited;
-	return exitCode === 0;
+	try {
+		const server = Bun.listen({
+			hostname: "127.0.0.1",
+			port,
+			socket: {
+				data() {},
+				open() {},
+				close() {},
+				error() {},
+			},
+		});
+		server.stop();
+		return false;
+	} catch {
+		return true;
+	}
 }
