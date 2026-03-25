@@ -17,6 +17,13 @@ import os
 import subprocess
 import sys
 
+# Hook gate — check .codeforge/config/disabled-hooks.json
+_dh = os.path.join(os.getcwd(), ".codeforge", "config", "disabled-hooks.json")
+if os.path.exists(_dh):
+    with open(_dh) as _f:
+        if os.path.basename(__file__).replace(".py", "") in json.load(_f).get("disabled", []):
+            sys.exit(0)
+
 
 def detect_test_framework(cwd: str) -> tuple[str, list[str]]:
     """Detect which test framework is available in the project.

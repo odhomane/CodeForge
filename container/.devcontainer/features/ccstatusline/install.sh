@@ -116,6 +116,65 @@ CWD_EOF
 chmod +x /usr/local/bin/ccstatusline-cwd
 echo "[ccstatusline] ✓ CWD helper installed at /usr/local/bin/ccstatusline-cwd"
 
+# Create cached git-changes helper script
+# Caches git diff --shortstat output to avoid index.lock contention
+# from the statusline polling every render tick
+echo "[ccstatusline] Creating git-changes helper..."
+cat > /usr/local/bin/ccstatusline-git-changes <<'GITCHANGES_EOF'
+#!/bin/bash
+# Cached git-changes widget — avoids index.lock contention
+# Caches git diff --shortstat for CACHE_TTL seconds (default 30)
+CACHE_TTL="${CCSTATUSLINE_GIT_CACHE_TTL:-30}"
+CACHE_FILE="/tmp/ccstatusline-git-changes-$$"
+
+# Read cwd from Claude Code JSON on stdin
+CWD=$(jq -r '.cwd // empty' 2>/dev/null)
+[ -z "$CWD" ] && exit 0
+
+# Use cwd hash so different projects don't share cache
+CACHE_KEY=$(echo "$CWD" | md5sum | cut -c1-8)
+CACHE_FILE="/tmp/ccstatusline-git-changes-${CACHE_KEY}"
+
+# Return cached value if fresh enough
+if [ -f "$CACHE_FILE" ]; then
+    AGE=$(( $(date +%s) - $(stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0) ))
+    if [ "$AGE" -lt "$CACHE_TTL" ]; then
+        cat "$CACHE_FILE"
+        exit 0
+    fi
+fi
+
+# Skip if lock is held (don't queue behind another git operation)
+if [ -f "$CWD/.git/index.lock" ]; then
+    [ -f "$CACHE_FILE" ] && cat "$CACHE_FILE"
+    exit 0
+fi
+
+# Run git diff with a short timeout
+UNSTAGED=$(timeout 3 git -C "$CWD" diff --shortstat 2>/dev/null || true)
+STAGED=$(timeout 3 git -C "$CWD" diff --cached --shortstat 2>/dev/null || true)
+
+# Parse insertions/deletions
+INS=0; DEL=0
+for STAT in "$UNSTAGED" "$STAGED"; do
+    I=$(echo "$STAT" | grep -oP '\d+(?=\s+insertions?)' || true)
+    D=$(echo "$STAT" | grep -oP '\d+(?=\s+deletions?)' || true)
+    INS=$(( INS + ${I:-0} ))
+    DEL=$(( DEL + ${D:-0} ))
+done
+
+OUTPUT=""
+[ "$INS" -gt 0 ] && OUTPUT="+${INS}"
+[ "$DEL" -gt 0 ] && OUTPUT="${OUTPUT:+${OUTPUT} }-${DEL}"
+[ -z "$OUTPUT" ] && OUTPUT="clean"
+
+echo "$OUTPUT" > "$CACHE_FILE"
+echo "$OUTPUT"
+GITCHANGES_EOF
+
+chmod +x /usr/local/bin/ccstatusline-git-changes
+echo "[ccstatusline] ✓ Git-changes helper installed at /usr/local/bin/ccstatusline-git-changes"
+
 # Create wrapper script to protect configuration
 echo "[ccstatusline] Creating wrapper script..."
 cat > /usr/local/bin/ccstatusline-wrapper <<'WRAPPER_EOF'

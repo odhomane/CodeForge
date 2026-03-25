@@ -5,8 +5,6 @@
 	"workspaceFolder": "/workspaces",
 	"workspaceMount": "source=${localWorkspaceFolder},target=/workspaces,type=bind",
 
-	"initializeCommand": "bash .devcontainer/scripts/preflight.sh",
-
 	"mounts": [
 		{
 			"source": "codeforge-claude-config-${devcontainerId}",
@@ -48,8 +46,9 @@
 
 	// Feature install order: external runtimes first (Node, uv, Bun),
 	// then Claude Code native binary (no Node dependency), then custom features.
-	// npm-dependent features (agent-browser, ccusage, ccburn, claude-session-dashboard,
-	// biome, lsp-servers) must come after Node. uv-dependent features (ruff, claude-monitor) must
+	// npm-dependent features (agent-browser, ccusage,
+	// biome, lsp-servers) must come after Node. bun-dependent features
+	// (claude-session-dashboard) must come after Bun. uv-dependent features (ruff, claude-monitor) must
 	// come after uv. notify-hook is second-to-last (lightweight, no dependencies).
 	// dbr (devcontainer-bridge) is last — standalone binary, no dependencies.
 	"overrideFeatureInstallOrder": [
@@ -64,7 +63,7 @@
 		"./features/agent-browser",
 		"./features/claude-monitor",
 		"./features/ccusage",
-		"./features/ccburn",
+		// "./features/ccburn",
 		"./features/ccstatusline",
 		"./features/claude-session-dashboard",
 		"./features/ast-grep",
@@ -113,22 +112,23 @@
 			"installer": "uv",
 			"username": "automatic"
 		},
-		"./features/ccburn": {
-			"version": "latest",
-			"shells": "both",
-			"username": "automatic"
-		},
+		// ccburn — disabled; replaced by native ccstatusline session-usage/weekly-usage widgets
+		// "./features/ccburn": {
+		// 	"version": "latest",
+		// 	"shells": "both",
+		// 	"username": "automatic"
+		// },
 		"./features/ccstatusline": {
 			"username": "automatic"
 		},
 		// Uncomment to add ccms (requires Rust):
 		// "./features/ccms": {},
-		"./features/claude-session-dashboard": {
-			"version": "latest",
-			"port": "7847",
-			"shells": "both",
-			"username": "automatic"
-		},
+		// "./features/claude-session-dashboard": {
+		// 	"version": "latest",
+		// 	"port": "7847",
+		// 	"shells": "both",
+		// 	"username": "automatic"
+		// },
 		"./features/ast-grep": {},
 		"./features/tree-sitter": {},
 		"./features/lsp-servers": {},
@@ -158,10 +158,10 @@
 		"ghcr.io/bradleybeddoes/devcontainer-bridge/dbr:0.2.0": {}
 	},
 
-	"forwardPorts": [],
+	"forwardPorts": [7847],
 	"portsAttributes": {
 		"7847": {
-			"label": "Claude Dashboard",
+			"label": "CodeForge Dashboard",
 			"onAutoForward": "notify"
 		},
 		"*": {
@@ -205,7 +205,9 @@
 				"projectManager.git.maxDepthRecursion": 2,
 				"projectManager.showProjectNameInStatusBar": true,
 				"projectManager.openInNewWindowWhenClickingInStatusBar": false,
-				"projectManager.projectsLocation": "/workspaces/.config/project-manager"
+				"projectManager.projectsLocation": "/workspaces/.config/project-manager",
+				"git.autofetch": false,
+				"git.autorefresh": false
 			},
 			"extensions": [
 				"wenbopan.vscode-terminal-osc-notifier",
@@ -215,5 +217,5 @@
 		}
 	},
 
-	"runArgs": ["--memory=6g", "--memory-swap=12g"]
+	"runArgs": ["--memory=6g", "--memory-swap=12g", "--name=codeforge"]
 }

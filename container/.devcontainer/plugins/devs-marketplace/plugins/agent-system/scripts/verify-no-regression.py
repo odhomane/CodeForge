@@ -19,6 +19,13 @@ import subprocess
 import sys
 import time
 
+# Hook gate — check .codeforge/config/disabled-hooks.json
+_dh = os.path.join(os.getcwd(), ".codeforge", "config", "disabled-hooks.json")
+if os.path.exists(_dh):
+    with open(_dh) as _f:
+        if os.path.basename(__file__).replace(".py", "") in json.load(_f).get("disabled", []):
+            sys.exit(0)
+
 DEBOUNCE_SECONDS = 10
 
 

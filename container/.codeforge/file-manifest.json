@@ -60,5 +60,11 @@
 		"destFilename": "settings.template.json",
 		"enabled": true,
 		"overwrite": "always"
+	},
+	{
+		"src": "config/disabled-hooks.json",
+		"dest": "${CLAUDE_CONFIG_DIR}",
+		"enabled": false,
+		"overwrite": "never"
 	}
 ]

@@ -5,6 +5,7 @@ import {
 	formatSessionListJson,
 	formatSessionListText,
 	type SessionListEntry,
+	type TaskSummary,
 } from "../src/output/session-list.js";
 
 const makeSummary = (overrides?: Partial<SessionSummary>): SessionSummary => ({
@@ -170,5 +171,117 @@ describe("session list formatter", () => {
 	test("empty entries list", () => {
 		const output = formatSessionListText([], { noColor: true });
 		expect(output).toContain("0 sessions listed");
+	});
+});
+
+describe("session list plan and task indicators", () => {
+	test("text format shows plan indicator", () => {
+		const entries: SessionListEntry[] = [
+			{
+				summary: makeSummary(),
+				meta: makeMeta(),
+				planSlug: "wondrous-rainbow",
+			},
+		];
+		const output = formatSessionListText(entries, { noColor: true });
+		expect(output).toContain("plan: wondrous-rainbow");
+	});
+
+	test("text format shows task progress bar", () => {
+		const ts: TaskSummary = {
+			total: 4,
+			completed: 2,
+			inProgress: 1,
+			pending: 1,
+		};
+		const entries: SessionListEntry[] = [
+			{
+				summary: makeSummary(),
+				meta: makeMeta(),
+				taskSummary: ts,
+			},
+		];
+		const output = formatSessionListText(entries, { noColor: true });
+		expect(output).toContain("2/4 tasks");
+		expect(output).toContain("\u2588");
+		expect(output).toContain("\u2591");
+	});
+
+	test("text format shows both plan and tasks", () => {
+		const ts: TaskSummary = {
+			total: 4,
+			completed: 2,
+			inProgress: 1,
+			pending: 1,
+		};
+		const entries: SessionListEntry[] = [
+			{
+				summary: makeSummary(),
+				meta: makeMeta(),
+				planSlug: "test-plan",
+				taskSummary: ts,
+			},
+		];
+		const output = formatSessionListText(entries, { noColor: true });
+		expect(output).toContain("plan:");
+		expect(output).toContain("tasks");
+	});
+
+	test("text format omits indicator line when neither present", () => {
+		const entries: SessionListEntry[] = [
+			{
+				summary: makeSummary(),
+				meta: makeMeta(),
+			},
+		];
+		const output = formatSessionListText(entries, { noColor: true });
+		expect(output).not.toContain("plan:");
+		expect(output).not.toContain("tasks");
+	});
+
+	test("JSON format includes plan field", () => {
+		const entries: SessionListEntry[] = [
+			{
+				summary: makeSummary(),
+				meta: makeMeta(),
+				planSlug: "test-plan",
+			},
+		];
+		const output = formatSessionListJson(entries);
+		const parsed = JSON.parse(output);
+		expect(parsed[0].plan).toBe("test-plan");
+	});
+
+	test("JSON format includes taskSummary field", () => {
+		const ts: TaskSummary = {
+			total: 4,
+			completed: 2,
+			inProgress: 1,
+			pending: 1,
+		};
+		const entries: SessionListEntry[] = [
+			{
+				summary: makeSummary(),
+				meta: makeMeta(),
+				taskSummary: ts,
+			},
+		];
+		const output = formatSessionListJson(entries);
+		const parsed = JSON.parse(output);
+		expect(parsed[0].taskSummary.total).toBe(4);
+		expect(parsed[0].taskSummary.completed).toBe(2);
+	});
+
+	test("JSON format has null plan and taskSummary when absent", () => {
+		const entries: SessionListEntry[] = [
+			{
+				summary: makeSummary(),
+				meta: makeMeta(),
+			},
+		];
+		const output = formatSessionListJson(entries);
+		const parsed = JSON.parse(output);
+		expect(parsed[0].plan).toBeNull();
+		expect(parsed[0].taskSummary).toBeNull();
 	});
 });

@@ -177,11 +177,11 @@ A few features ship with `"version": "none"` by default (shfmt, dprint, shellche
 - **GitHub CLI** (`gh`) — repository management, PR creation, issue tracking
 - **Docker** (Docker-outside-of-Docker) — container operations from inside the DevContainer
 - **tmux** — terminal multiplexing for parallel Claude Code sessions
-- **ccms** — search your Claude Code session history _(currently disabled — replacement pending)_
+- **ccms** — search your Claude Code session history _(currently disabled — replaced by `codeforge session search`)_
 - **ccusage** / **ccburn** — token usage analysis and burn rate tracking
 - **ccstatusline** — session status in your terminal prompt
 - **claude-monitor** — real-time session monitoring
-- **claude-dashboard** — web-based session analytics on port 7847
+- **codeforge-dashboard** — web-based session analytics on port 7847
 - **agent-browser** — headless Chromium via Playwright for web interaction
 - **ast-grep** / **tree-sitter** — structural code search and parsing
 

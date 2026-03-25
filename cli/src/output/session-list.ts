@@ -2,9 +2,25 @@ import chalk from "chalk";
 import type { SessionSummary } from "../loaders/history-loader.js";
 import type { SessionMeta } from "../loaders/session-meta.js";
 
+export interface TaskSummary {
+	total: number;
+	completed: number;
+	inProgress: number;
+	pending: number;
+}
+
 export interface SessionListEntry {
 	summary: SessionSummary;
 	meta?: SessionMeta;
+	planSlug?: string;
+	taskSummary?: TaskSummary;
+}
+
+function formatTaskBar(ts: TaskSummary): string {
+	const filled = ts.completed;
+	const total = ts.total;
+	const bar = "\u2588".repeat(filled) + "\u2591".repeat(total - filled);
+	return `[${bar}] ${filled}/${total} tasks`;
 }
 
 function formatTimestamp(iso: string): string {
@@ -50,6 +66,17 @@ export function formatSessionListText(
 		const end = formatTimestamp(summary.timestamps.last);
 		const msgPart = meta ? `  (${meta.messageCount} messages)` : "";
 		lines.push(`  ${start} \u2192 ${end}${msgPart}`);
+
+		const indicators: string[] = [];
+		if (entry.planSlug) {
+			indicators.push(chalk.cyan(`plan: ${entry.planSlug}`));
+		}
+		if (entry.taskSummary && entry.taskSummary.total > 0) {
+			indicators.push(formatTaskBar(entry.taskSummary));
+		}
+		if (indicators.length > 0) {
+			lines.push(`  ${indicators.join("  ")}`);
+		}
 		lines.push("---");
 	}
 
@@ -71,6 +98,8 @@ export function formatSessionListJson(entries: SessionListEntry[]): string {
 				start: summary.timestamps.first,
 				end: summary.timestamps.last,
 			},
+			plan: entry.planSlug ?? null,
+			taskSummary: entry.taskSummary ?? null,
 		};
 	});
 

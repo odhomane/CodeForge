@@ -167,6 +167,8 @@ export default defineConfig({
 								label: "Code Intelligence",
 								slug: "features/code-intelligence",
 							},
+							{ label: "Dashboard", slug: "features/dashboard" },
+							{ label: "Memories", slug: "features/memories" },
 						],
 					},
 					{

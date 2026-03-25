@@ -10,6 +10,14 @@ Exit code 0 allows the command to proceed.
 import json
 import re
 import sys
+import os
+
+# Hook gate — check .codeforge/config/disabled-hooks.json
+_dh = os.path.join(os.getcwd(), ".codeforge", "config", "disabled-hooks.json")
+if os.path.exists(_dh):
+    with open(_dh) as _f:
+        if os.path.basename(__file__).replace(".py", "") in json.load(_f).get("disabled", []):
+            sys.exit(0)
 
 FORCE_PUSH_SUGGESTION = (
     "Blocked: force push is not allowed. "
@@ -55,11 +63,6 @@ DANGEROUS_PATTERNS = [
         r"\bgit\s+push\s+--force\s+(origin\s+)?(main|master)\b",
         "Blocked: force push to main/master destroys history",
     ),
-    # System directory modification
-    (r">\s*/usr/", "Blocked: writing to /usr system directory"),
-    (r">\s*/etc/", "Blocked: writing to /etc system directory"),
-    (r">\s*/bin/", "Blocked: writing to /bin system directory"),
-    (r">\s*/sbin/", "Blocked: writing to /sbin system directory"),
     # Disk formatting
     (r"\bmkfs\.\w+", "Blocked: disk formatting command"),
     (r"\bdd\s+.*of=/dev/", "Blocked: dd writing to device"),

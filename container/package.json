@@ -10,7 +10,10 @@
 		"test": "node test.js",
 		"test:plugins": "pytest tests/ -v",
 		"test:all": "npm test && pytest tests/ -v",
-		"prepublishOnly": "npm run test:all"
+		"prepublishOnly": "npm run test:all",
+		"docs:dev": "npm run dev --prefix docs",
+		"docs:build": "npm run build --prefix docs",
+		"docs:preview": "npm run preview --prefix docs"
 	},
 	"keywords": [
 		"devcontainer",
@@ -29,7 +32,11 @@
 	"license": "GPL-3.0",
 	"files": [
 		".devcontainer/**/*",
+		"!.devcontainer/.env",
+		"!.devcontainer/.env.*",
+		"!.devcontainer/.secrets",
 		".codeforge/**/*",
+		"!.codeforge/.markers/**",
 		"setup.js",
 		"README.md"
 	],

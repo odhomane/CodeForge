@@ -1,5 +1,81 @@
 # CodeForge Devcontainer Changelog
 
+## v2.1.0 — 2026-03-25
+
+### CLI
+
+- **`codeforge proxy`** — launch Claude Code through mitmproxy for full API traffic inspection. Starts mitmweb in the background, proxies all Claude API requests through it, and opens a browser UI at `http://localhost:8081` for real-time request/response inspection. Auto-installs mitmproxy via pipx on first use, handles CA certificate generation and system trust store installation. Supports `--no-web` for headless mitmdump output, `--setup` for install-only, and `-- <claude-args>` passthrough. Useful for monitoring token usage, cache behavior, and rate limit utilization — the `anthropic-ratelimit-unified-*` response headers on `/v1/messages` requests show 5-hour and 7-day quota utilization even with long-lived auth tokens.
+- **Version lock** — set `CLAUDE_VERSION_LOCK=<semver>` in `.env` to pin Claude Code to a specific version. The update script installs the exact version instead of updating to latest. Background auto-updater disabled via `DISABLE_AUTOUPDATER`.
+
+### Dashboard
+
+- **First-party dashboard** — replaced third-party `claude-session-dashboard` npm package with `codeforge-dashboard` (built from monorepo `dashboard/` package)
+- Auto-launch on container start via poststart hook (controllable with `autostart` option)
+- Install switched from npm to Bun (`bun install -g`)
+- Command renamed: `claude-dashboard` → `codeforge-dashboard`
+- Removed persistence symlink hook (dashboard DB now lives on bind mount at `~/.codeforge/data/`)
+
+### Hooks
+
+- **Per-hook disable mechanism** — add script names to `.codeforge/config/disabled-hooks.json` to disable individual hooks without disabling the entire plugin. Takes effect immediately, no restart needed.
+- Disabled by default: `git-state-injector`, `ticket-linker`, `spec-reminder`, `commit-reminder`
+
+### Scope Guard
+
+- Fix false positives blocking writes to system paths (`/dev/null`, `/usr/`, `/etc/`, `$HOME/`) — scope guard now only enforces isolation between workspace projects
+- Remove complex system-command exemption logic (no longer needed)
+
+### Dangerous Command Blocker
+
+- Remove system directory write redirect blocks (`> /usr/`, `> /etc/`, `> /bin/`, `> /sbin/`) — caused false positives on text content in command arguments (e.g. PR body text containing paths); write location enforcement is the scope guard's responsibility
+
+### Skills
+
+- Added `agent-browser` skill to skill-engine plugin — guides headless browser automation with CLI reference, workflow patterns, and authentication
+
+### Configuration
+
+- Add `autoMemoryDirectory` setting — auto-memory now stored in project-local `.claude/memory/` instead of deep inside `~/.claude/projects/`, making it visible and version-controllable
+- Enhanced system prompts with auto-memory system, hooks awareness, safety rules, and anti-over-engineering guidance
+
+### Status Bar
+
+- Replace `ccburn-compact` statusline widget with native `session-usage` and `weekly-usage` ccstatusline widgets — eliminates external command dependency and 8s timeout
+- Comment out `ccburn` devcontainer feature (disabled by default) — functionality replaced by native widgets
+
+### Windows Compatibility
+
+- Fix `claude-code-native` install failure on Windows/macOS Docker Desktop — installer now falls back to `HOME` override when `su` is unavailable
+- Remove `preflight.sh` runtime check — redundant with Docker's own error reporting and caused failures on Windows
+
+### CLI Integration
+
+- Add codeforge-cli devcontainer feature — installs the CodeForge CLI (`codeforge` command) globally via npm
+- Remove dead `codeforge` alias from setup-aliases.sh (was pointing to obsolete `setup.js`)
+
+### Testing
+
+- **Plugin test suite** — 241 pytest tests covering 6 critical plugin scripts that previously had zero tests:
+  - `block-dangerous.py` (46 tests) — all 22 dangerous command patterns with positive/negative/edge cases
+  - `guard-workspace-scope.py` (40 tests) — blacklist, scope, allowlist, bash enforcement layers, primary command extraction
+  - `guard-protected.py` (55 tests) — all protected file patterns (secrets, locks, keys, credentials, auth dirs)
+  - `guard-protected-bash.py` (24 tests) — write target extraction and protected path integration
+  - `guard-readonly-bash.py` (63 tests) — general-readonly and git-readonly modes, bypass prevention
+  - `redirect-builtin-agents.py` (13 tests) — redirect mapping, passthrough, output structure
+- Added `test:plugins` and `test:all` npm scripts for running plugin tests
+
+### Documentation
+
+- **DevContainer CLI guide** — dedicated Getting Started page for terminal-only workflows without VS Code
+- **v2 Migration Guide** — path changes, automatic migration, manual steps, breaking changes, and troubleshooting
+- Documented 4 previously undocumented agents in agents.md: implementer, investigator, tester, documenter
+- Added missing git-workflow and prompt-snippets to configuration.md enabledPlugins example
+- Added CONFIG_SOURCE_DIR deprecation note in environment variables reference
+- Added cc-orc orchestrator command to first-session launch commands table
+- Tabbed client-specific instructions on the installation page
+- Dedicated port forwarding reference page covering VS Code auto-detect, devcontainer-bridge, and SSH tunneling
+- Document `${CLAUDE_PLUGIN_DATA}` variable in CLAUDE.md for future plugin persistent storage
+
 ## v2.1.1 — 2026-03-13
 
 ### Workspace Scope Guard

@@ -34,6 +34,8 @@ Thumbs.db
 # Environment files (never publish)
 .env
 .env.*
+.devcontainer/.env
+.devcontainer/.env.*
 
 # User config artifacts (generated during --force update)
 .devcontainer/**/*.codeforge-new
@@ -47,3 +49,6 @@ Thumbs.db
 # Secrets (never publish)
 .secrets
 .devcontainer/.secrets
+
+# Per-installation state (not tracked)
+.codeforge/.markers/

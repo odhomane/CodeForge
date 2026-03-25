@@ -1,5 +1,7 @@
 # ccburn - Visual Token Burn Rate Tracker
 
+> **Note:** This feature is disabled by default in the CodeForge devcontainer. Session and weekly usage tracking is now handled by native `session-usage` and `weekly-usage` ccstatusline widgets. To re-enable ccburn, uncomment its entry in `devcontainer.json`.
+
 Real-time burn-up charts and pace tracking for Claude Code usage limits.
 
 ## Quick Start

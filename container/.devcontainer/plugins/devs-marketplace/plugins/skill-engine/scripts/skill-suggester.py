@@ -13,6 +13,14 @@ by confidence score.
 import json
 import re
 import sys
+import os
+
+# Hook gate — check .codeforge/config/disabled-hooks.json
+_dh = os.path.join(os.getcwd(), ".codeforge", "config", "disabled-hooks.json")
+if os.path.exists(_dh):
+    with open(_dh) as _f:
+        if os.path.basename(__file__).replace(".py", "") in json.load(_f).get("disabled", []):
+            sys.exit(0)
 
 # Maximum number of skills to suggest per prompt.
 MAX_SKILLS = 3
@@ -189,6 +197,36 @@ SKILLS: dict[str, dict] = {
             ("drag and drop to svelte", 0.9),
         ],
         "terms": ["sveltekit", "svelte", "svelte-dnd-action", "@ai-sdk/svelte"],
+        "priority": 7,
+    },
+    "agent-browser": {
+        "phrases": [
+            ("agent-browser", 1.0),
+            ("agent browser", 1.0),
+            ("headless browser", 0.8),
+            ("browser automation", 0.9),
+            ("open a webpage", 0.7),
+            ("navigate a site", 0.7),
+            ("take a screenshot of a page", 0.8),
+            ("fill a form on a website", 0.8),
+            ("accessibility tree", 0.8),
+            ("scrape a page", 0.5),
+            ("interact with a website", 0.5),
+            ("automate browser", 0.9),
+        ],
+        "terms": ["agent-browser", "agent_browser"],
+        "negative": ["playwright test", "cypress", "puppeteer"],
+        "context_guards": [
+            "browser",
+            "webpage",
+            "website",
+            "page",
+            "url",
+            "screenshot",
+            "headless",
+            "navigate",
+            "form",
+        ],
         "priority": 7,
     },
     "docker": {

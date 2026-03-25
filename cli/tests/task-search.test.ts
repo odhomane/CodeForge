@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import type { TaskWithTeam } from "../src/loaders/task-loader.js";
-import { formatTaskJson, formatTaskText } from "../src/output/task-text.js";
+import {
+	formatTaskJson,
+	formatTaskShowJson,
+	formatTaskShowText,
+	formatTaskText,
+} from "../src/output/task-text.js";
 import { evaluate, parse } from "../src/search/query-parser.js";
 
 const tasks: TaskWithTeam[] = [
@@ -216,5 +221,87 @@ describe("task JSON formatter", () => {
 		const output = formatTaskJson([]);
 		const parsed = JSON.parse(output);
 		expect(parsed).toEqual([]);
+	});
+});
+
+describe("task show text formatter", () => {
+	test("shows team name", () => {
+		const output = formatTaskShowText(tasks[0], { noColor: true });
+		expect(output).toContain("Team:        test-team");
+	});
+
+	test("shows task ID", () => {
+		const output = formatTaskShowText(tasks[0], { noColor: true });
+		expect(output).toContain("Task:        #1");
+	});
+
+	test("shows status", () => {
+		const output = formatTaskShowText(tasks[0], { noColor: true });
+		expect(output).toContain("Status:      completed");
+	});
+
+	test("shows subject", () => {
+		const output = formatTaskShowText(tasks[0], { noColor: true });
+		expect(output).toContain("Subject:     Implement login");
+	});
+
+	test("shows description with indentation", () => {
+		const output = formatTaskShowText(tasks[0], { noColor: true });
+		expect(output).toContain("Description:");
+		expect(output).toContain("  Add login form with validation");
+	});
+
+	test("shows em-dash for empty blocks", () => {
+		const output = formatTaskShowText(tasks[0], { noColor: true });
+		expect(output).toContain("Blocks:      \u2014");
+	});
+
+	test("shows em-dash for empty blockedBy", () => {
+		const output = formatTaskShowText(tasks[0], { noColor: true });
+		expect(output).toContain("Blocked by:  \u2014");
+	});
+
+	test("shows blockedBy references", () => {
+		const output = formatTaskShowText(tasks[1], { noColor: true });
+		expect(output).toContain("Blocked by:  #1");
+	});
+
+	test("omits description when empty", () => {
+		const taskNoDesc: TaskWithTeam = {
+			id: "99",
+			subject: "No description task",
+			description: "",
+			status: "pending",
+			blocks: [],
+			blockedBy: [],
+			team: "test-team",
+		};
+		const output = formatTaskShowText(taskNoDesc, { noColor: true });
+		expect(output).not.toContain("Description:");
+	});
+});
+
+describe("task show JSON formatter", () => {
+	test("returns valid JSON object", () => {
+		const parsed = JSON.parse(formatTaskShowJson(tasks[0]));
+		expect(typeof parsed).toBe("object");
+		expect(Array.isArray(parsed)).toBe(false);
+		expect(parsed.id).toBe("1");
+	});
+
+	test("includes all task fields", () => {
+		const parsed = JSON.parse(formatTaskShowJson(tasks[0]));
+		expect(parsed.id).toBe("1");
+		expect(parsed.team).toBe("test-team");
+		expect(parsed.status).toBe("completed");
+		expect(parsed.subject).toBe("Implement login");
+		expect(parsed.description).toBe("Add login form with validation");
+		expect(parsed.blocks).toEqual([]);
+		expect(parsed.blockedBy).toEqual([]);
+	});
+
+	test("preserves blockedBy relationships", () => {
+		const parsed = JSON.parse(formatTaskShowJson(tasks[1]));
+		expect(parsed.blockedBy).toEqual(["1"]);
 	});
 });

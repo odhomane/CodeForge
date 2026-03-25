@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import type { TaskWithTeam } from "../loaders/task-loader.js";
 
-function colorStatus(status: string): string {
+export function colorStatus(status: string): string {
 	switch (status) {
 		case "pending":
 			return chalk.yellow(status);
@@ -58,4 +58,59 @@ export function formatTaskJson(tasks: TaskWithTeam[]): string {
 	}));
 
 	return JSON.stringify(output, null, 2);
+}
+
+export function formatTaskShowText(
+	task: TaskWithTeam,
+	options?: { noColor?: boolean },
+): string {
+	if (options?.noColor) {
+		chalk.level = 0;
+	}
+
+	const lines: string[] = [];
+
+	lines.push(`Team:        ${chalk.magenta(task.team)}`);
+	lines.push(`Task:        #${task.id}`);
+	lines.push(`Status:      ${colorStatus(task.status)}`);
+	lines.push(`Subject:     ${task.subject}`);
+
+	if (task.description) {
+		lines.push("");
+		lines.push("Description:");
+		for (const line of task.description.split("\n")) {
+			lines.push(`  ${line}`);
+		}
+	}
+
+	lines.push("");
+	const blocks =
+		task.blocks.length > 0
+			? task.blocks.map((b) => `#${b}`).join(", ")
+			: "\u2014";
+	lines.push(`Blocks:      ${blocks}`);
+
+	const blockedBy =
+		task.blockedBy.length > 0
+			? task.blockedBy.map((b) => `#${b}`).join(", ")
+			: "\u2014";
+	lines.push(`Blocked by:  ${blockedBy}`);
+
+	return lines.join("\n");
+}
+
+export function formatTaskShowJson(task: TaskWithTeam): string {
+	return JSON.stringify(
+		{
+			id: task.id,
+			team: task.team,
+			status: task.status,
+			subject: task.subject,
+			description: task.description,
+			blocks: task.blocks,
+			blockedBy: task.blockedBy,
+		},
+		null,
+		2,
+	);
 }

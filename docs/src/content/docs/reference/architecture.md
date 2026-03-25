@@ -120,7 +120,7 @@ CodeForge ships 38 skills across the skill-engine, spec-workflow, ticket-workflo
 +-- devcontainer.json              # Container definition (image, features, mounts)
 +-- .env                           # Setup flags (SETUP_CONFIG, SETUP_ALIASES, etc.)
 +-- features/                      # DevContainer features (tool installers)
-|   +-- ccms/                      # Session history search (commented out — replacement pending)
+|   +-- ccms/                      # Session history search (commented out — replaced by `codeforge session search`)
 |   +-- ccstatusline/              # Terminal status line
 |   +-- ccusage/                   # API usage stats
 |   +-- ccburn/                    # Token burn rate
@@ -135,7 +135,7 @@ CodeForge ships 38 skills across the skill-engine, spec-workflow, ticket-workflo
 |   +-- devs-marketplace/
 |       +-- plugins/
 |           +-- agent-system/      # 21 agents + redirection hooks
-|           +-- skill-engine/      # 22 skills + auto-suggestion
+|           +-- skill-engine/      # 23 skills + auto-suggestion
 |           +-- spec-workflow/     # 8 spec lifecycle skills
 |           +-- session-context/   # Git state, TODOs, commit reminders
 |           +-- auto-code-quality/ # Format + lint + test at Stop

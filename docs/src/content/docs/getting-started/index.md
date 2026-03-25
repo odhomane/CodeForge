@@ -42,7 +42,7 @@ If you already have Docker and VS Code installed, you can go from zero to a runn
 Plugins are the backbone of CodeForge. They hook into Claude Code's lifecycle to enhance, guard, and automate your workflow. Highlights include:
 
 - **Agent System** — 21 specialized agents for architecture, debugging, testing, security, and more
-- **Skill Engine** — 22 domain-specific knowledge packs covering frameworks, patterns, and workflows
+- **Skill Engine** — 23 domain-specific knowledge packs covering frameworks, patterns, and workflows
 - **Spec Workflow** — specification-driven development with 8 lifecycle skills
 - **Session Context** — automatic git state injection, TODO harvesting, and commit reminders
 - **Auto Code Quality** — formatting, linting, and advisory test runs on every change
@@ -60,7 +60,7 @@ CodeForge installs a comprehensive toolchain so you never have to stop and insta
 - **Package Managers** — uv (Python), npm, Bun, pip/pipx
 - **Code Intelligence** — tree-sitter, ast-grep, Pyright, TypeScript LSP
 - **Linters and Formatters** — Ruff, Biome, shfmt, ShellCheck, hadolint, dprint
-- **CLI Utilities** — GitHub CLI, Docker, jq, tmux, and CodeForge-specific tools like ccusage and ccburn (ccms currently disabled — replacement pending)
+- **CLI Utilities** — GitHub CLI, Docker, jq, tmux, and CodeForge-specific tools like ccusage and ccburn (ccms currently disabled — replaced by `codeforge session search`)
 
 See the [Features Overview](../features/) for the complete reference.
 

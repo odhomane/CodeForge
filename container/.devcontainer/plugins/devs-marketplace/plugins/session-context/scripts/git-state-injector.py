@@ -15,6 +15,13 @@ import os
 import subprocess
 import sys
 
+# Hook gate — check .codeforge/config/disabled-hooks.json
+_dh = os.path.join(os.getcwd(), ".codeforge", "config", "disabled-hooks.json")
+if os.path.exists(_dh):
+    with open(_dh) as _f:
+        if os.path.basename(__file__).replace(".py", "") in json.load(_f).get("disabled", []):
+            sys.exit(0)
+
 GIT_CMD_TIMEOUT = 5
 STATUS_LINE_CAP = 20
 DIFF_STAT_LINE_CAP = 15

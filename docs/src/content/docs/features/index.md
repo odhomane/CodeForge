@@ -15,8 +15,10 @@ Out of the box, CodeForge gives you:
 
 - **21 specialized AI agents** with focused expertise and safety-calibrated tool access
 - **38 domain knowledge packs** (skills) for frameworks, patterns, and workflows
-- **22 CLI tools** for session management, code quality, and development
+- **23 CLI tools** for session management, code quality, and development
 - **3 layers of code intelligence** — AST-based search, syntax parsing, and LSP semantic analysis
+- **Visual analytics dashboard** with session replay, cost tracking, and activity heatmaps
+- **Memory management** for reviewing and curating agent-generated observations
 - **17 plugins** that wire everything together with hooks, guards, and automation
 
 All of these features work together. An agent can load skills for domain expertise, use CLI tools for code quality checks, and leverage code intelligence for precise navigation — all orchestrated automatically.
@@ -43,7 +45,7 @@ Key safety features set CodeForge agents apart:
 
 ## Skills
 
-**38 domain-specific knowledge packs** give Claude deep expertise in frameworks, patterns, and workflows. The skill engine provides 22 core skills covering frameworks, practices, and Claude/CodeForge topics. Additional skills come from the spec-workflow (8), ticket-workflow (4), git-workflow (2), agent-system (1), and prompt-snippets (1) plugins. When you start discussing FastAPI routes or Svelte 5 runes, the skill engine detects the context and auto-suggests the relevant skill. Once loaded, the skill injects structured knowledge — best practices, code patterns, API references, and common pitfalls — directly into Claude's context for the current task.
+**38 domain-specific knowledge packs** give Claude deep expertise in frameworks, patterns, and workflows. The skill engine provides 23 core skills covering frameworks, practices, and Claude/CodeForge topics. Additional skills come from the spec-workflow (8), ticket-workflow (4), git-workflow (2), agent-system (1), and prompt-snippets (1) plugins. When you start discussing FastAPI routes or Svelte 5 runes, the skill engine detects the context and auto-suggests the relevant skill. Once loaded, the skill injects structured knowledge — best practices, code patterns, API references, and common pitfalls — directly into Claude's context for the current task.
 
 Each skill is built around a "mental model" — a concise explanation of how a technology works, followed by concrete patterns, code examples, and guidance. This is not generic documentation; skills encode the kind of working knowledge a senior specialist carries.
 
@@ -59,12 +61,12 @@ Skills cover three categories:
 
 ## CLI Tools
 
-CodeForge pre-installs **22 tools and utilities** covering session management, code quality, language runtimes, and development infrastructure. Every tool is available on your `PATH` from the first terminal session — run `cc-tools` to see everything installed and its version.
+CodeForge pre-installs **23 tools and utilities** covering session management, code quality, language runtimes, and development infrastructure. Every tool is available on your `PATH` from the first terminal session — run `cc-tools` to see everything installed and its version.
 
 Highlights include:
 
 - **`cc`** — Launch Claude Code with full CodeForge configuration (plugins, system prompt, agents)
-- **`ccms`** — Search your Claude Code session history with boolean queries, role filtering, and time scoping _(currently disabled — replacement pending)_
+- **`ccms`** — Search your Claude Code session history with boolean queries, role filtering, and time scoping _(currently disabled — replaced by `codeforge session search`)_
 - **`ccusage`** / **`ccburn`** — Track your Claude API token usage and burn rate
 - **`ruff`**, **`biome`**, **`shellcheck`** — Code quality tools for Python, JS/TS, and Shell
 - **`sg`** (ast-grep), **`tree-sitter`** — Structural code search and syntax tree operations
@@ -85,14 +87,28 @@ CodeForge installs LSP servers for Python (Pyright), TypeScript/JavaScript, and 
 
 [View code intelligence features →](./code-intelligence/)
 
+## Dashboard
+
+A **visual analytics dashboard** (Svelte 5 SPA + Bun backend) gives you a complete picture of your Claude Code usage. Browse sessions with full conversation replay, track costs and token consumption across projects, view activity heatmaps, and monitor active sessions with real-time SSE updates. The dashboard runs on port 7847 and auto-launches when your container starts.
+
+[View dashboard features →](./dashboard/)
+
+## Memories
+
+The **memory management system** lets you review and curate the observations Claude generates during sessions. Analysis runs extract patterns, preferences, and decisions from conversations. You review each observation in the dashboard — approve it as a permanent memory or dismiss it — and maintenance runs keep the memory store clean. Approved memories sync back to your project's `MEMORY.md` for use in future sessions.
+
+[View memory management →](./memories/)
+
 ## Feature Summary
 
 | Category | Count | Highlights |
 |----------|-------|------------|
 | [Agents](./agents/) | 21 | Architect, Explorer, Security Auditor, Test Writer, Refactorer, and 16 more |
 | [Skills](./skills/) | 38 | FastAPI, Svelte 5, Docker, Testing, Debugging, Security, and 32 more |
-| [CLI Tools](./tools/) | 22 | Session search, token tracking, code quality, formatters, and runtimes |
+| [CLI Tools](./tools/) | 23 | Session search, token tracking, code quality, formatters, and runtimes |
 | [Code Intelligence](./code-intelligence/) | 3 | ast-grep, tree-sitter, LSP servers for Python/TS/Go |
+| [Dashboard](./dashboard/) | -- | Session replay, cost tracking, activity heatmaps, real-time SSE updates |
+| [Memories](./memories/) | -- | Observation review, approval workflow, analysis and maintenance runs |
 
 ## How Features Are Delivered
 
@@ -112,3 +128,5 @@ Everything is modular and extensible. See [Customization](../customization/) for
 - [Plugins](../plugins/) — the plugin system that delivers these features
 - [Customization](../customization/) — configure and extend features
 - [Commands Reference](../reference/commands/) — all CLI commands in one table
+- [Dashboard](./dashboard/) — visual analytics and session replay
+- [Memories](./memories/) — memory review and curation workflow

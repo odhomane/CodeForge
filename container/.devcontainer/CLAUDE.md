@@ -10,6 +10,7 @@ CodeForge devcontainer for AI-assisted development with Claude Code.
 | `.codeforge/config/main-system-prompt.md` | System prompt defining assistant behavior |
 | `.codeforge/config/orchestrator-system-prompt.md` | Orchestrator mode prompt (delegation-first) |
 | `.codeforge/config/ccstatusline-settings.json` | Status bar widget layout (deployed to ~/.config/ccstatusline/) |
+| `.codeforge/config/disabled-hooks.json` | Disable individual plugin hooks by script name |
 | `.codeforge/file-manifest.json` | Controls which config files deploy and when |
 | `devcontainer.json` | Container definition: image, features, mounts |
 | `.env` | Boolean flags controlling setup steps |
@@ -26,10 +27,11 @@ Config files deploy via `.codeforge/file-manifest.json` on every container start
 | `ccw` | Claude Code with writing system prompt |
 | `cc-orc` | Claude Code in orchestrator mode (delegation-first) |
 | `ccms` | Session history search _(disabled — requires Rust toolchain; uncomment in devcontainer.json to enable)_ |
+| `codeforge proxy` | Launch Claude Code through mitmproxy — inspect API traffic in browser (port 8081) |
 | `ccusage` / `ccburn` | Token usage analysis / burn rate |
 | `agent-browser` | Headless Chromium (Playwright-based) |
 | `check-setup` | Verify CodeForge setup health |
-| `claude-dashboard` | Session analytics dashboard (port 7847) |
+| `codeforge-dashboard` | Session analytics dashboard — auto-launches on start (port 7847) |
 | `dbr` | Dynamic port forwarding ([devcontainer-bridge](https://github.com/bradleybeddoes/devcontainer-bridge)) |
 | `cc-tools` | List all installed tools with versions |
 
@@ -38,7 +40,7 @@ Config files deploy via `.codeforge/file-manifest.json` on every container start
 Declared in `settings.json` under `enabledPlugins`, auto-activated on start:
 
 - **agent-system** — 21 custom agents (4 workhorse + 17 specialist) + built-in agent redirection
-- **skill-engine** — 22 general coding skills + auto-suggestion
+- **skill-engine** — 23 general coding skills + auto-suggestion
 - **spec-workflow** — 3 spec lifecycle skills (`/spec`, `/build`, `/specs`) + spec-reminder hook
 - **session-context** — Git state injection, TODO harvesting, commit reminders
 - **auto-code-quality** — Auto-format + auto-lint + advisory test runner
@@ -78,3 +80,15 @@ The `~/.claude/` directory is backed by a Docker named volume (`codeforge-claude
 5. **Disable features**: Set `"version": "none"` in the feature's config
 6. **Disable setup steps**: Set flags to `false` in `.env`
 7. **Customize status bar**: Edit `.codeforge/config/ccstatusline-settings.json`
+8. **Lock Claude Code version**: Set `CLAUDE_VERSION_LOCK=2.1.80` in `.env` — the update script installs that exact version on container start instead of updating to latest. Unset to resume auto-updates.
+9. **Disable individual hooks**: Add script name (without `.py`) to `disabled` array in `.codeforge/config/disabled-hooks.json` — takes effect immediately, no restart needed
+
+## Plugin Development Notes
+
+### `${CLAUDE_PLUGIN_DATA}` — Persistent Plugin Storage
+
+Available since Claude Code v2.1.78. Resolves to a dedicated data directory per plugin that survives plugin updates (unlike `${CLAUDE_PLUGIN_ROOT}`, which points to the plugin's source directory).
+
+**Current state:** Not used in CodeForge plugins. Plugins store transient state in `/tmp/{prefix}-{session_id}`.
+
+**Future use:** When a plugin needs persistent state across sessions (cached configs, learned preferences, usage frequency), use `${CLAUDE_PLUGIN_DATA}` in hook commands instead of `/tmp/`.

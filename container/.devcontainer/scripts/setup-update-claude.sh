@@ -56,6 +56,26 @@ fi
 CURRENT_VERSION=$("$NATIVE_BIN" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
 log "Current version: ${CURRENT_VERSION}"
 
+# === VERSION LOCK ===
+# If CLAUDE_VERSION_LOCK is set to a semver, pin to that exact version
+# instead of updating to latest. Set in .env alongside SETUP_UPDATE_CLAUDE.
+if [ -n "${CLAUDE_VERSION_LOCK:-}" ] && echo "$CLAUDE_VERSION_LOCK" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+	if [ "$CURRENT_VERSION" = "$CLAUDE_VERSION_LOCK" ]; then
+		log "Version locked at ${CLAUDE_VERSION_LOCK} (current matches)"
+		exit 0
+	fi
+
+	log "Version lock: ${CURRENT_VERSION} → ${CLAUDE_VERSION_LOCK}"
+	if curl -fsSL https://claude.ai/install.sh | bash -s -- "$CLAUDE_VERSION_LOCK" 2>&1 | tee -a "$LOG_FILE"; then
+		LOCKED_VERSION=$("$NATIVE_BIN" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || echo "unknown")
+		log "Installed locked version: ${LOCKED_VERSION}"
+	else
+		log "WARNING: Failed to install locked version ${CLAUDE_VERSION_LOCK}"
+	fi
+	exit 0
+fi
+
+# === UPDATE TO LATEST ===
 # Use the official update command with timeout (handles download, verification, and versioned install)
 timeout 60 "$NATIVE_BIN" update 2>&1 | tee -a "$LOG_FILE"
 UPDATE_STATUS=${PIPESTATUS[0]}
