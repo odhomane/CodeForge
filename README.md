@@ -8,6 +8,7 @@ Monorepo for CodeForge — an AI-powered development environment for Claude Code
 |---------|-------------|---------|
 | [`container/`](container/) | CodeForge DevContainer (`codeforge-dev` on npm) | 2.0.0 |
 | [`cli/`](cli/) | CodeForge CLI (`codeforge-cli`) | 0.1.0 |
+| [`dashboard/`](dashboard/) | Session analytics dashboard (Svelte 5 SPA + Bun backend) | — |
 | [`docs/`](docs/) | Documentation site ([codeforge.core-directive.com](https://codeforge.core-directive.com)) | — |
 
 ## Quick Start
@@ -29,6 +30,9 @@ cd container && npm test
 
 # CLI (Bun)
 cd cli && bun test
+
+# Dashboard (Bun)
+cd dashboard && bun test
 
 # Docs (npm)
 cd docs && npm run build
