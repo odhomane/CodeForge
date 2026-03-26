@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-CodeForge is a DevContainer configuration that transforms your development environment into an AI-powered workspace. It bundles 17 plugins, 22 tools, 19 specialized agents, and 34 skills into a single `npx codeforge-dev` install.
+CodeForge is a DevContainer configuration that transforms your development environment into an AI-powered workspace. It bundles 17 plugins, 22 tools, 19 specialized agents, and 34 skills into a single `npx @coredirective/cf-container` install.
 
 ## What is CodeForge?
 
@@ -16,7 +16,7 @@ Inside the container, Claude Code gains superpowers: specialized agents handle a
 ## Quick Install
 
 ```bash
-npx codeforge-dev
+npx @coredirective/cf-container
 ```
 
 This sets up the `.devcontainer/` configuration in your project. Open the project in VS Code and reopen in the container when prompted. That's it — your AI-powered workspace is ready.

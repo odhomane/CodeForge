@@ -16,7 +16,7 @@ body:
       label: Steps to Reproduce
       description: Steps to reproduce the behavior
       placeholder: |
-        1. Run `npx codeforge-dev`
+        1. Run `npx @coredirective/cf-container`
         2. Open in container
         3. ...
     validations:
@@ -34,7 +34,7 @@ body:
     id: version
     attributes:
       label: CodeForge Version
-      description: "Run `npm view codeforge-dev version` or check package.json"
+      description: "Run `npm view @coredirective/cf-container version` or check package.json"
       placeholder: "1.14.2"
     validations:
       required: true

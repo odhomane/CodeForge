@@ -1,10 +1,10 @@
 # CodeForge DevContainer
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![npm version](https://img.shields.io/npm/v/codeforge-dev.svg)](https://www.npmjs.com/package/codeforge-dev)
+[![npm version](https://img.shields.io/npm/v/@coredirective%2Fcf-container.svg)](https://www.npmjs.com/package/@coredirective/cf-container)
 [![Changelog](https://img.shields.io/badge/changelog-view-blue)](.devcontainer/CHANGELOG.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/AnExiledDev/CodeForge)](https://github.com/AnExiledDev/CodeForge/commits)
-[![npm downloads](https://img.shields.io/npm/dm/codeforge-dev)](https://www.npmjs.com/package/codeforge-dev)
+[![npm downloads](https://img.shields.io/npm/dm/@coredirective%2Fcf-container)](https://www.npmjs.com/package/@coredirective/cf-container)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen)](https://nodejs.org/)
 [![GitHub issues](https://img.shields.io/github/issues/AnExiledDev/CodeForge)](https://github.com/AnExiledDev/CodeForge/issues)
 [![CI](https://github.com/AnExiledDev/CodeForge/actions/workflows/ci.yml/badge.svg)](https://github.com/AnExiledDev/CodeForge/actions/workflows/ci.yml)
@@ -22,7 +22,7 @@ Instead of spending hours discovering and configuring advanced features like bui
 Add CodeForge to any project:
 
 ```bash
-npx codeforge-dev
+npx @coredirective/cf-container
 ```
 
 This copies the `.devcontainer/` directory to your project. Then open in VS Code and select "Reopen in Container".
@@ -30,20 +30,20 @@ This copies the `.devcontainer/` directory to your project. Then open in VS Code
 ### Options
 
 ```bash
-npx codeforge-dev --force    # Smart update (preserves your customizations)
-npx codeforge-dev -f         # Short form
-npx codeforge-dev --reset    # Fresh install (wipes .devcontainer, keeps .codeforge)
+npx @coredirective/cf-container --force    # Smart update (preserves your customizations)
+npx @coredirective/cf-container -f         # Short form
+npx @coredirective/cf-container --reset    # Fresh install (wipes .devcontainer, keeps .codeforge)
 ```
 
 ### Alternative Install Methods
 
 ```bash
 # Install globally
-npm install -g codeforge-dev
+npm install -g @coredirective/cf-container
 codeforge-dev
 
 # Run specific version
-npx codeforge-dev@1.2.3
+npx @coredirective/cf-container@1.2.3
 ```
 
 ## Prerequisites
@@ -132,7 +132,7 @@ For the complete configuration guide, see the [documentation site](https://codef
 
 ## Quick Start
 
-1. **Install**: `npx codeforge-dev`
+1. **Install**: `npx @coredirective/cf-container`
 2. **Open in Container**:
    - **VS Code**: "Reopen in Container" from the Command Palette
    - **CLI**: `devcontainer up --workspace-folder .` then `docker exec -it <container> zsh`

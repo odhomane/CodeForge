@@ -7,7 +7,7 @@ CLI for CodeForge development workflows. Manages sessions, plugins, configuratio
 ## Install
 
 ```bash
-npm install -g codeforge-dev-cli
+npm install -g @coredirective/cf-cli
 ```
 
 Requires [Bun](https://bun.sh) runtime.

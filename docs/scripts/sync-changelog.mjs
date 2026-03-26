@@ -51,10 +51,10 @@ Breaking changes are rare. Most releases are minor versions that add new plugins
 
 \`\`\`bash
 # Update to latest version
-npx codeforge-dev@latest
+npx @coredirective/cf-container@latest
 
 # Update to a specific version
-npx codeforge-dev@1.14.0
+npx @coredirective/cf-container@2.1.0
 \`\`\`
 
 After updating, rebuild your DevContainer to apply changes:

@@ -6,7 +6,7 @@ Monorepo for CodeForge — an AI-powered development environment for Claude Code
 
 | Package | Description | Version |
 |---------|-------------|---------|
-| [`container/`](container/) | CodeForge DevContainer (`codeforge-dev` on npm) | 2.1.0 |
+| [`container/`](container/) | CodeForge DevContainer (`@coredirective/cf-container` on npm) | 2.1.0 |
 | [`cli/`](cli/) | CodeForge CLI (`codeforge-cli`) | 0.1.0 |
 | [`dashboard/`](dashboard/) | Session analytics dashboard (Svelte 5 SPA + Bun backend) | — |
 | [`docs/`](docs/) | Documentation site ([codeforge.core-directive.com](https://codeforge.core-directive.com)) | — |
@@ -15,7 +15,7 @@ Monorepo for CodeForge — an AI-powered development environment for Claude Code
 
 ```bash
 # Install the devcontainer into any project
-npx codeforge-dev
+npx @coredirective/cf-container
 ```
 
 See [`container/README.md`](container/README.md) for full setup instructions, prerequisites, and usage.
@@ -43,7 +43,7 @@ See [`CLAUDE.md`](CLAUDE.md) for branching strategy and development rules.
 ## Links
 
 - [Documentation](https://codeforge.core-directive.com)
-- [npm package](https://www.npmjs.com/package/codeforge-dev)
+- [npm package](https://www.npmjs.com/package/@coredirective/cf-container)
 - [GitHub](https://github.com/AnExiledDev/CodeForge)
 - [Changelog](container/.devcontainer/CHANGELOG.md)
 

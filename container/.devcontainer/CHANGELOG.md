@@ -2,6 +2,12 @@
 
 ## v2.1.0 — 2026-03-25
 
+### Package Rename
+
+- **`codeforge-dev`** has been renamed to **`@coredirective/cf-container`** on npm
+- Install via: `npx @coredirective/cf-container`
+- The old `codeforge-dev` package name is deprecated
+
 ### CLI
 
 - **`codeforge proxy`** — launch Claude Code through mitmproxy for full API traffic inspection. Starts mitmweb in the background, proxies all Claude API requests through it, and opens a browser UI at `http://localhost:8081` for real-time request/response inspection. Auto-installs mitmproxy via pipx on first use, handles CA certificate generation and system trust store installation. Supports `--no-web` for headless mitmdump output, `--setup` for install-only, and `-- <claude-args>` passthrough. Useful for monitoring token usage, cache behavior, and rate limit utilization — the `anthropic-ratelimit-unified-*` response headers on `/v1/messages` requests show 5-hour and 7-day quota utilization even with long-lived auth tokens.

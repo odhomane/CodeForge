@@ -2,6 +2,12 @@
 
 ## v0.1.0 — 2026-03-14 (Experimental)
 
+### Package Rename
+
+- **`codeforge-dev-cli`** has been renamed to **`@coredirective/cf-cli`** on npm
+- Install via: `npm install -g @coredirective/cf-cli`
+- The old `codeforge-dev-cli` package name is deprecated
+
 Initial release. Ships with CodeForge v2.1.1.
 
 ### Command Groups

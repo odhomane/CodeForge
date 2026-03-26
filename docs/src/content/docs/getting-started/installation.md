@@ -12,7 +12,7 @@ This guide walks you through setting up CodeForge from scratch. The process has 
 Navigate to your project root and run:
 
 ```bash
-npx codeforge-dev
+npx @coredirective/cf-container
 ```
 
 This creates a `.devcontainer/` directory containing the full CodeForge configuration — all plugins, features, agents, skills, system prompts, and settings. Your existing project files are not modified.
@@ -21,8 +21,8 @@ This creates a `.devcontainer/` directory containing the full CodeForge configur
 If your project already has a `.devcontainer/` directory, the installer will warn you and exit. Two flags handle this:
 
 ```bash
-npx codeforge-dev --force    # Smart update (preserves your customizations)
-npx codeforge-dev --reset    # Fresh install (wipes .devcontainer, keeps .codeforge)
+npx @coredirective/cf-container --force    # Smart update (preserves your customizations)
+npx @coredirective/cf-container --reset    # Fresh install (wipes .devcontainer, keeps .codeforge)
 ```
 
 **`--force`** uses an intelligent sync — it preserves files you've customized (writing `.default` copies of new defaults in `.codeforge/` for review) rather than blindly overwriting everything. Use this for routine updates.
@@ -34,11 +34,11 @@ npx codeforge-dev --reset    # Fresh install (wipes .devcontainer, keeps .codefo
 
 ```bash
 # Install globally for repeated use
-npm install -g codeforge-dev
-codeforge-dev
+npm install -g @coredirective/cf-container
+@coredirective/cf-container
 
 # Pin a specific version
-npx codeforge-dev@2.1.0
+npx @coredirective/cf-container@2.1.0
 ```
 
 ### What the Installer Creates
@@ -205,7 +205,7 @@ See the [Customization section](../customization/) for full details on each conf
 To update to the latest version:
 
 ```bash
-npx codeforge-dev@latest
+npx @coredirective/cf-container@latest
 ```
 
 This updates the `.devcontainer/` configuration. After updating, rebuild the container:
@@ -222,7 +222,7 @@ Use `git diff .devcontainer/` after updating to review what changed before commi
 Having trouble with the build, authentication, or missing tools? See the [Troubleshooting reference](../reference/troubleshooting/) for solutions to common issues including:
 
 - Container build failures and slow builds
-- `npx codeforge-dev` installation errors
+- `npx @coredirective/cf-container` installation errors
 - VS Code not showing the DevContainer prompt
 - Claude Code authentication problems
 - Docker permissions on Linux and WSL 2 integration on Windows

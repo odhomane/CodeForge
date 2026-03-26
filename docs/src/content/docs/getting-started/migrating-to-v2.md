@@ -44,7 +44,7 @@ If you prefer to migrate by hand:
 
 1. **Update CodeForge:**
    ```bash
-   npx codeforge-dev@latest
+   npx @coredirective/cf-container@latest
    ```
 
 2. **Review the new `.codeforge/` directory** created by the installer. It contains default versions of all config files.
@@ -73,7 +73,7 @@ If you prefer to migrate by hand:
 
 CodeForge v2 uses **checksum-based modification detection** to protect your customizations during updates:
 
-- When you run `npx codeforge-dev@latest`, the installer compares each `.codeforge/` file's SHA-256 checksum against the known default.
+- When you run `npx @coredirective/cf-container@latest`, the installer compares each `.codeforge/` file's SHA-256 checksum against the known default.
 - **Unmodified files** are updated in place with the new default.
 - **Modified files** are preserved. The new default is written as a `.default` file (e.g., `settings.json.default`) for you to review and merge manually.
 

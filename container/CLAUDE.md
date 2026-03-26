@@ -1,6 +1,6 @@
 # CodeForge Container
 
-The `codeforge-dev` npm package — a complete development container for AI-powered coding with Claude Code.
+The `@coredirective/cf-container` npm package — a complete development container for AI-powered coding with Claude Code.
 
 See `.devcontainer/CLAUDE.md` for full devcontainer documentation.
 See the root `CLAUDE.md` for monorepo-wide development rules (branching strategy, testing).

@@ -1,5 +1,8 @@
 {
-	"name": "codeforge-dev-cli",
+	"name": "@coredirective/cf-cli",
+	"publishConfig": {
+		"access": "public"
+	},
 	"version": "0.1.0",
 	"description": "CLI for CodeForge development workflows",
 	"keywords": [

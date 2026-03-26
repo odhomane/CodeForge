@@ -2,6 +2,11 @@
 
 ## v0.1.0
 
+### Package Rename
+
+- **`codeforge-dashboard`** has been renamed to **`@coredirective/cf-dash`** on npm
+- The old `codeforge-dashboard` package name is deprecated
+
 Initial release of `codeforge-dashboard` — session analytics for Claude Code.
 
 - Svelte 5 SPA with dark mode, TailwindCSS 4, LayerChart

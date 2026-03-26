@@ -23,10 +23,10 @@ Breaking changes are rare. Most releases are minor versions that add new plugins
 
 ```bash
 # Update to latest version
-npx codeforge-dev@latest
+npx @coredirective/cf-container@latest
 
 # Update to a specific version
-npx codeforge-dev@1.14.0
+npx @coredirective/cf-container@2.1.0
 ```
 
 After updating, rebuild your DevContainer to apply changes:
@@ -48,6 +48,12 @@ For minor and patch updates, you can usually just rebuild the container. Check t
 ## Version History
 
 ## v2.1.0 — 2026-03-25
+
+### Package Rename
+
+- **`codeforge-dev`** has been renamed to **`@coredirective/cf-container`** on npm
+- Install via: `npx @coredirective/cf-container`
+- The old `codeforge-dev` package name is deprecated
 
 ### CLI
 
