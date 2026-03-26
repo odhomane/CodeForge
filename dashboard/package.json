@@ -25,7 +25,7 @@
 		"build": "vite build",
 		"test": "bun test",
 		"preview": "vite preview",
-		"prepublishOnly": "bun run build && bun test"
+		"prepublishOnly": "echo 'Build and tests handled by CI workflow'"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.10",
