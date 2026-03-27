@@ -10,14 +10,15 @@
 
 ### CLI
 
+- **CLI feature now installs from NPM** — `codeforge-cli` feature installs `@coredirective/cf-cli` via `bun install -g` instead of running from workspace source. Auto-falls back to source when developing CodeForge itself.
 - **`codeforge proxy`** — launch Claude Code through mitmproxy for full API traffic inspection. Starts mitmweb in the background, proxies all Claude API requests through it, and opens a browser UI at `http://localhost:8081` for real-time request/response inspection. Auto-installs mitmproxy via pipx on first use, handles CA certificate generation and system trust store installation. Supports `--no-web` for headless mitmdump output, `--setup` for install-only, and `-- <claude-args>` passthrough. Useful for monitoring token usage, cache behavior, and rate limit utilization — the `anthropic-ratelimit-unified-*` response headers on `/v1/messages` requests show 5-hour and 7-day quota utilization even with long-lived auth tokens.
 - **Version lock** — set `CLAUDE_VERSION_LOCK=<semver>` in `.env` to pin Claude Code to a specific version. The update script installs the exact version instead of updating to latest. Background auto-updater disabled via `DISABLE_AUTOUPDATER`.
 
 ### Dashboard
 
-- **First-party dashboard** — replaced third-party `claude-session-dashboard` npm package with `codeforge-dashboard` (built from monorepo `dashboard/` package)
+- **First-party dashboard** — replaced third-party `claude-session-dashboard` npm package with `@coredirective/cf-dash` (built from monorepo `dashboard/` package)
+- Dashboard feature now installs from NPM registry via `bun install -g @coredirective/cf-dash`
 - Auto-launch on container start via poststart hook (controllable with `autostart` option)
-- Install switched from npm to Bun (`bun install -g`)
 - Command renamed: `claude-dashboard` → `codeforge-dashboard`
 - Removed persistence symlink hook (dashboard DB now lives on bind mount at `~/.codeforge/data/`)
 

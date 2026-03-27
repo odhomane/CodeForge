@@ -2,7 +2,7 @@
 	"id": "codeforge-cli",
 	"version": "1.0.0",
 	"name": "CodeForge CLI",
-	"description": "Installs a self-bootstrapping wrapper that runs the CodeForge CLI from workspace source for session search, plugin management, and configuration (experimental)",
+	"description": "Installs the CodeForge CLI from NPM (@coredirective/cf-cli) for session search, plugin management, and configuration. Auto-falls back to workspace source when developing CodeForge itself.",
 	"documentationURL": "https://github.com/AnExiledDev/CodeForge/tree/main/cli",
 	"options": {
 		"version": {
