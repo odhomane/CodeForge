@@ -77,11 +77,20 @@ cat > /usr/local/bin/codeforge <<'WRAPPER'
 #!/bin/bash
 set -euo pipefail
 
-CLI_DIR="${WORKSPACE_ROOT:-/workspaces}/cli"
 BUN="${BUN:-$(command -v bun 2>/dev/null || echo "$HOME/.bun/bin/bun")}"
 
-# Dev mode: if workspace cli/ source exists, use it
-if [ -d "$CLI_DIR/src" ]; then
+# Dev mode: find CLI source in workspace
+CLI_DIR=""
+for candidate in \
+    "${WORKSPACE_ROOT:-/workspaces}/cli" \
+    "${WORKSPACE_ROOT:-/workspaces}/projects/CodeForge/cli"; do
+    if [ -d "$candidate/src" ]; then
+        CLI_DIR="$candidate"
+        break
+    fi
+done
+
+if [ -n "$CLI_DIR" ]; then
     if [ ! -d "$CLI_DIR/node_modules" ]; then
         echo "codeforge: bootstrapping dev dependencies..." >&2
         "$BUN" install --cwd "$CLI_DIR" --frozen-lockfile >/dev/null 2>&1 || \

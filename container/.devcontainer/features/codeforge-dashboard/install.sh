@@ -96,6 +96,26 @@ set -euo pipefail
 
 BUN="${BUN:-$(command -v bun 2>/dev/null || echo "$HOME/.bun/bin/bun")}"
 
+# Dev mode: find dashboard source in workspace
+DASH_DIR=""
+for candidate in \
+    "${WORKSPACE_ROOT:-/workspaces}/dashboard" \
+    "${WORKSPACE_ROOT:-/workspaces}/projects/CodeForge/dashboard"; do
+    if [ -d "$candidate/src" ]; then
+        DASH_DIR="$candidate"
+        break
+    fi
+done
+
+if [ -n "$DASH_DIR" ]; then
+    if [ ! -d "$DASH_DIR/node_modules" ]; then
+        echo "codeforge-dashboard: bootstrapping dev dependencies..." >&2
+        "$BUN" install --cwd "$DASH_DIR" --frozen-lockfile >/dev/null 2>&1 || \
+        "$BUN" install --cwd "$DASH_DIR" >/dev/null 2>&1
+    fi
+    exec "$DASH_DIR/bin/codeforge-dashboard" "$@"
+fi
+
 # Check runtime user's global bin first
 GLOBAL_BIN="$("$BUN" pm bin -g 2>/dev/null || echo "$HOME/.bun/bin")"
 if [ -x "$GLOBAL_BIN/codeforge-dashboard" ] && [ "$GLOBAL_BIN/codeforge-dashboard" != "$0" ]; then

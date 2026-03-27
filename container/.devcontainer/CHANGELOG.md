@@ -1,5 +1,20 @@
 # CodeForge Devcontainer Changelog
 
+## v2.1.1 — 2026-03-27
+
+### CLI
+
+- Fix wrapper source discovery — search both `/workspaces/cli` and `/workspaces/projects/CodeForge/cli` so the CLI works in nested workspace layouts
+
+### Dashboard
+
+- Fix wrapper to add dev-mode source discovery — dashboard now finds and runs from monorepo source when available, matching CLI behavior
+- Fix wrapper to exec the bash entrypoint directly instead of through bun (which tried to parse it as JavaScript)
+
+### Install Scripts
+
+- Improve bun detection in CLI and dashboard install scripts — add explicit `/root/.bun/bin/bun` and `/home/vscode/.bun/bin/bun` candidate paths, detailed error output, and `PATH` export for downstream commands
+
 ## v2.1.0 — 2026-03-25
 
 ### Package Rename
