@@ -11,10 +11,9 @@ description: >-
   structural improvements. Do not use for adding new features, fixing bugs,
   or making behavioral changes to code.
 tools: Read, Edit, Glob, Grep, Bash
-model: opus
+model: opus-4-5
 color: yellow
 permissionMode: acceptEdits
-isolation: worktree
 memory:
   scope: project
 skills:
@@ -26,6 +25,7 @@ hooks:
       type: command
       command: "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/verify-no-regression.py"
       timeout: 30
+effort: xhigh
 ---
 
 # Refactorer Agent

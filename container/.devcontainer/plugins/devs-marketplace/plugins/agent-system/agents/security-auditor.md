@@ -16,7 +16,7 @@ description: >-
   modifying any files. Do not use for fixing vulnerabilities or
   implementing security changes — audit and reporting only.
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: opus-4-5
 color: red
 permissionMode: plan
 background: true
@@ -30,6 +30,7 @@ hooks:
       type: command
       command: "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/guard-readonly-bash.py --mode general-readonly"
       timeout: 5
+effort: xhigh
 ---
 
 # Security Auditor Agent

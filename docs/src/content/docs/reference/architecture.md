@@ -124,13 +124,12 @@ CodeForge ships 34 skills across the skill-engine, spec-workflow, ticket-workflo
 |   +-- ccstatusline/              # Terminal status line
 |   +-- ccusage/                   # API usage stats
 |   +-- ccburn/                    # Token burn rate
-|   +-- claude-session-dashboard/  # Web dashboard
 |   +-- claude-monitor/            # Real-time monitor
 |   +-- ast-grep/                  # Structural code search
 |   +-- tree-sitter/               # Syntax parsing
 |   +-- ruff/                      # Python formatter/linter
 |   +-- biome/                     # JS/TS formatter/linter
-|   +-- ... (22 features total)
+|   +-- ... (23 features total)
 +-- plugins/
 |   +-- devs-marketplace/
 |       +-- plugins/
@@ -249,6 +248,6 @@ Claude's working context for the session
 
 ## Related
 
-- [Plugins](../plugins/) -- detailed plugin documentation
-- [Hooks](../customization/hooks/) -- hook system details and the full hook reference table
-- [Configuration](../customization/configuration/) -- configuration layers and file manifest
+- [Plugin System](/extend/plugin-system/) -- detailed plugin documentation
+- [Hooks](/customize/hooks/) -- hook system details and the full hook reference table
+- [Settings and Permissions](/customize/settings-and-permissions/) -- configuration layers and file manifest

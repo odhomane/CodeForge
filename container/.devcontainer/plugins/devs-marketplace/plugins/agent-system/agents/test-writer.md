@@ -11,10 +11,9 @@ description: >-
   test frameworks. Do not use for modifying application source code, fixing
   bugs, or implementing features.
 tools: Read, Write, Edit, Glob, Grep, Bash
-model: opus
+model: opus-4-5
 color: green
 permissionMode: acceptEdits
-isolation: worktree
 memory:
   scope: project
 skills:
@@ -25,6 +24,7 @@ hooks:
     - type: command
       command: "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/verify-tests-pass.py"
       timeout: 120
+effort: xhigh
 ---
 
 # Test Writer Agent

@@ -15,7 +15,7 @@ description: >-
   any files. Do not use for code modifications, file writing, or
   implementation tasks.
 tools: Read, Glob, Grep, WebSearch, WebFetch, Bash
-model: sonnet
+model: opus-4-5
 color: cyan
 permissionMode: plan
 memory:
@@ -33,6 +33,7 @@ hooks:
       type: command
       command: "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/guard-readonly-bash.py --mode general-readonly"
       timeout: 5
+effort: xhigh
 ---
 
 # Investigator Agent

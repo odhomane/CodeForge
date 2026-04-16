@@ -10,7 +10,7 @@ description: >-
   plans with critical file paths and never modifies any files. Do not
   use for implementation, code generation, or file modifications.
 tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
-model: opus
+model: opus-4-5
 color: magenta
 permissionMode: plan
 memory:
@@ -25,6 +25,7 @@ hooks:
       type: command
       command: "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/guard-readonly-bash.py --mode general-readonly"
       timeout: 5
+effort: max
 ---
 
 # Architect Agent

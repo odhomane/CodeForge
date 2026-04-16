@@ -12,10 +12,9 @@ description: >-
   management. Do not use for modifying source code logic, fixing bugs, or
   feature implementation.
 tools: Read, Write, Edit, Glob, Grep
-model: opus
+model: opus-4-5
 color: magenta
 permissionMode: acceptEdits
-isolation: worktree
 memory:
   scope: project
 skills:
@@ -23,6 +22,7 @@ skills:
   - spec
   - build
   - specs
+effort: xhigh
 ---
 
 # Documenter Agent

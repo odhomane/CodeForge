@@ -11,15 +11,15 @@ description: >-
   verification. Do not use for new feature development, bug fixes, or
   changes unrelated to version or framework migration.
 tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch
-model: opus
+model: opus-4-5
 color: magenta
 permissionMode: acceptEdits
-isolation: worktree
 memory:
   scope: user
 skills:
   - migration-patterns
   - build
+effort: xhigh
 ---
 
 # Migrator Agent
