@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import type { Command } from "commander";
-import { basename } from "path";
+import { stat } from "fs/promises";
+import { basename, isAbsolute, resolve } from "path";
 import { readLines } from "../../search/engine.js";
 import { discoverSessionFiles } from "../../utils/glob.js";
 import { parseRelativeTime, parseTime } from "../../utils/time.js";
@@ -78,6 +79,54 @@ function extractProjectFromPath(filePath: string): string | undefined {
 		return parts[projectsIdx + 1];
 	}
 	return undefined;
+}
+
+/**
+ * Normalize a user-provided --project value for matching against Claude's
+ * on-disk project slugs.
+ *
+ * Claude encodes project cwds by replacing `/` and `.` with `-`, e.g.
+ *   /workspaces/projects/CodeForge  -> -workspaces-projects-CodeForge
+ *   /workspaces/.devcontainer       -> -workspaces--devcontainer
+ *
+ * Behavior:
+ * - Absolute paths are converted to slug form.
+ * - Relative paths beginning with `./` or `../` are resolved against cwd first.
+ * - Plain substrings without separators pass through unchanged so users can
+ *   filter with `--project CodeForge` against the slug (backwards-compatible).
+ */
+export function pathToProjectSlug(input: string): string {
+	const looksLikePath =
+		isAbsolute(input) || input.startsWith("./") || input.startsWith("../");
+	if (looksLikePath) {
+		const abs = isAbsolute(input) ? input : resolve(input);
+		// Normalize Windows separators so the slug logic (which encodes `/` and
+		// `.` as `-`) produces identical output on all platforms. Without this,
+		// `resolve("./foo")` on Windows returns `D:\...\foo` and the backslashes
+		// leak through unchanged.
+		const normalized = abs.replace(/\\/g, "/");
+		return normalized.replace(/\/+$/, "").replace(/[./]/g, "-");
+	}
+	return input;
+}
+
+/**
+ * Pure check for whether a file's last-modified time falls within an optional
+ * [since, until] window. Exported for direct unit testing without fixtures.
+ *
+ * Semantics:
+ * - `since`: mtime must be >= since (inclusive)
+ * - `until`: mtime must be <= until (inclusive)
+ * - If both bounds are omitted, always returns true.
+ */
+export function isFileWithinTimeRange(
+	mtime: Date,
+	since?: Date,
+	until?: Date,
+): boolean {
+	if (since && mtime < since) return false;
+	if (until && mtime > until) return false;
+	return true;
 }
 
 function isSubagentPath(filePath: string): boolean {
@@ -304,11 +353,30 @@ async function analyzeTokens(options: {
 	const mainSessions: SessionTokenStats[] = [];
 	const subagentSessions: SessionTokenStats[] = [];
 
+	const projectNeedle = options.project
+		? pathToProjectSlug(options.project)
+		: undefined;
+
+	const hasTimeFilter = !!(options.since || options.until);
+
 	for (const filePath of files) {
-		// Filter by project
-		if (options.project) {
+		// Filter by project (slug-to-slug match; absolute paths are encoded).
+		if (projectNeedle) {
 			const project = extractProjectFromPath(filePath);
-			if (!project?.includes(options.project)) continue;
+			if (!project?.includes(projectNeedle)) continue;
+		}
+
+		// Filter by file mtime (session activity time) before the expensive
+		// per-file parse. Sessions outside the window are skipped without reads.
+		if (hasTimeFilter) {
+			try {
+				const st = await stat(filePath);
+				if (!isFileWithinTimeRange(st.mtime, options.since, options.until)) {
+					continue;
+				}
+			} catch {
+				continue;
+			}
 		}
 
 		const stats = await analyzeSessionTokens(filePath);

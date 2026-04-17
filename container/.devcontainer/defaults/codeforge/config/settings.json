@@ -3,8 +3,8 @@
 	"autoCompact": true,
 	"alwaysThinkingEnabled": true,
 	"env": {
-		"ANTHROPIC_MODEL": "claude-opus-4-7",
-		"ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-7",
+		"ANTHROPIC_MODEL": "claude-opus-4-5",
+		"ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-5",
 		"ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
 		"ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001",
 		"BASH_DEFAULT_TIMEOUT_MS": "120000",
@@ -13,13 +13,11 @@
 		"MAX_MCP_OUTPUT_TOKENS": "10000",
 		"MAX_THINKING_TOKENS": "31999",
 		"CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
-		"CLAUDE_CODE_EFFORT_LEVEL": "max",
+		"CLAUDE_CODE_EFFORT_LEVEL": "high",
 		"MCP_TIMEOUT": "120000",
 		"MCP_TOOL_TIMEOUT": "30000",
 		"CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "80",
 		"FORCE_AUTOUPDATE_PLUGINS": "1",
-		"CLAUDE_CODE_AUTO_COMPACT_WINDOW": "250000",
-		"CLAUDE_CODE_MAX_CONTEXT_TOKENS": "250000",
 		"CLAUDE_CODE_SCROLL_SPEED": "3",
 
 		"ENABLE_TOOL_SEARCH": "auto:5",
@@ -51,7 +49,7 @@
 	},
 	"autoMemoryDirectory": "./.claude/memory",
 	"plansDirectory": "./.claude/plans",
-	"viewMode": "verbose",
+	"viewMode": "focus",
 	"spinnerVerbs": {
 		"mode": "replace",
 		"verbs": [
