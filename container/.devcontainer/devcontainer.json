@@ -214,7 +214,7 @@
 		}
 	},
 
-	"postStartCommand": "bash ${containerWorkspaceFolder}/.devcontainer/scripts/setup.sh",
+	"postStartCommand": "bash -lc 'if [ -f ${containerWorkspaceFolder}/.devcontainer/scripts/setup.sh ]; then bash ${containerWorkspaceFolder}/.devcontainer/scripts/setup.sh; else bash ${containerWorkspaceFolder}/container/.devcontainer/scripts/setup.sh; fi'",
 
 	"remoteUser": "vscode",
 	"containerUser": "vscode",
