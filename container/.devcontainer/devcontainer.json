@@ -91,7 +91,8 @@
 	// biome, lsp-servers) must come after Node. bun-dependent features
 	// uv-dependent features (ruff, claude-monitor) must
 	// come after uv. notify-hook is second-to-last (lightweight, no dependencies).
-	// dbr (devcontainer-bridge) is last — standalone binary, no dependencies.
+	// DevPod provides its own SSH tunneling; dbr stays out of the default
+	// feature set because its entrypoint can interfere with DevPod agent startup.
 	"overrideFeatureInstallOrder": [
 		"ghcr.io/devcontainers/features/node",
 		"ghcr.io/devcontainers/features/github-cli",
@@ -120,8 +121,7 @@
 		"./features/shellcheck",
 		"./features/hadolint",
 		"./features/biome",
-		"./features/notify-hook",
-		"ghcr.io/bradleybeddoes/devcontainer-bridge/dbr"
+		"./features/notify-hook"
 	],
 
 	"features": {
@@ -204,8 +204,7 @@
 		"./features/notify-hook": {
 			"enableBell": true,
 			"enableOsc": true
-		},
-		"ghcr.io/bradleybeddoes/devcontainer-bridge/dbr:0.2.0": {}
+		}
 	},
 
 	"portsAttributes": {
