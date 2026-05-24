@@ -14,6 +14,11 @@ if [ -f "$ENV_FILE" ]; then
     set +a
 fi
 
+# Some clients, including DevPod, may not pass remoteEnv to postStartCommand.
+# The devcontainer mounts the project at /workspaces, so use that as the
+# fallback workspace root before any migration/default logic needs it.
+: "${WORKSPACE_ROOT:=/workspaces}"
+
 # Deprecation guard: .env may still set CLAUDE_CONFIG_DIR=/workspaces/.claude
 # (pre-v2.0 default). Since .env is gitignored, PR updates can't fix it.
 # Override with warning so all child scripts use the correct home location.
@@ -46,7 +51,7 @@ fi
 if [ "$CONFIG_SOURCE_DIR" = "$DEVCONTAINER_DIR/config" ] || [ "$CONFIG_SOURCE_DIR" = "/workspaces/.devcontainer/config" ]; then
     echo "[setup] WARNING: CONFIG_SOURCE_DIR pointing to .devcontainer/config is deprecated (moved to .codeforge in v2.0)"
     echo "[setup]   Redirecting to .codeforge."
-    : "${CODEFORGE_DIR:=${WORKSPACE_ROOT:?}/.codeforge}"
+    : "${CODEFORGE_DIR:=${WORKSPACE_ROOT}/.codeforge}"
     unset CONFIG_SOURCE_DIR
     if [ -f "$ENV_FILE" ]; then
         sed -i 's|^CONFIG_SOURCE_DIR=.*\.devcontainer/config.*|# CONFIG_SOURCE_DIR removed (v2.0: now uses .codeforge)|' "$ENV_FILE"
@@ -56,7 +61,7 @@ fi
 
 # Apply defaults for any unset variables
 : "${CLAUDE_CONFIG_DIR:=$HOME/.claude}"
-: "${CODEFORGE_DIR:=${WORKSPACE_ROOT:?}/.codeforge}"
+: "${CODEFORGE_DIR:=${WORKSPACE_ROOT}/.codeforge}"
 : "${CONFIG_SOURCE_DIR:=$CODEFORGE_DIR}"
 : "${SETUP_CONFIG:=true}"
 : "${SETUP_ALIASES:=true}"
@@ -67,12 +72,21 @@ fi
 : "${SETUP_TERMINAL:=true}"
 : "${SETUP_POSTSTART:=true}"
 
-export CLAUDE_CONFIG_DIR CONFIG_SOURCE_DIR CODEFORGE_DIR SETUP_CONFIG SETUP_ALIASES SETUP_AUTH SETUP_PLUGINS SETUP_UPDATE_CLAUDE CLAUDE_VERSION_LOCK SETUP_PROJECTS SETUP_TERMINAL SETUP_POSTSTART
+export WORKSPACE_ROOT CLAUDE_CONFIG_DIR CONFIG_SOURCE_DIR CODEFORGE_DIR SETUP_CONFIG SETUP_ALIASES SETUP_AUTH SETUP_PLUGINS SETUP_UPDATE_CLAUDE CLAUDE_VERSION_LOCK SETUP_PROJECTS SETUP_TERMINAL SETUP_POSTSTART
 
 # Fix named volume ownership — Docker creates named volumes as root:root
 # regardless of remoteUser. This is the only setup script requiring sudo.
 if ! sudo chown "$(id -un):$(id -gn)" "$HOME/.claude" 2>/dev/null; then
     echo "[setup] WARNING: Could not fix volume ownership on $HOME/.claude — subsequent scripts may fail"
+fi
+
+# DevPod and some remote providers clone the workspace as root before the
+# devcontainer switches to remoteUser. Make the workspace writable for setup
+# scripts that create .codeforge/, .config/, .tmp/, and other local state.
+if [ -d "$WORKSPACE_ROOT" ] && [ ! -w "$WORKSPACE_ROOT" ]; then
+    if ! sudo chown -R "$(id -un):$(id -gn)" "$WORKSPACE_ROOT" 2>/dev/null; then
+        echo "[setup] WARNING: Could not fix workspace ownership on $WORKSPACE_ROOT — project setup may fail"
+    fi
 fi
 
 SETUP_START=$(date +%s)
