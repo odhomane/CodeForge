@@ -1,0 +1,16 @@
+{
+	"id": "devpod-agent",
+	"version": "0.1.0",
+	"name": "DevPod Agent",
+	"description": "Preinstalls the DevPod CLI/agent binary so DevPod startup does not depend on container-time binary injection.",
+	"options": {
+		"version": {
+			"type": "string",
+			"default": "v0.7.0-alpha.34",
+			"description": "DevPod release tag to install."
+		}
+	},
+	"installsAfter": [
+		"ghcr.io/devcontainers/features/common-utils"
+	]
+}

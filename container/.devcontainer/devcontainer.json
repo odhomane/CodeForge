@@ -99,6 +99,7 @@
 		"ghcr.io/devcontainers/features/docker-outside-of-docker",
 		"ghcr.io/devcontainers-extra/features/uv",
 		"ghcr.io/rails/devcontainer/features/bun",
+		"./features/devpod-agent",
 		"./features/codeforge-cli",
 		"./features/claude-code-native",
 		"./features/codex-cli",
@@ -143,6 +144,9 @@
 		// },
 		// Uncomment to add Go runtime (not installed by default):
 		// "ghcr.io/devcontainers/features/go:1": {},
+		"./features/devpod-agent": {
+			"version": "v0.7.0-alpha.34"
+		},
 		"./features/claude-code-native": {},
 		"./features/codex-cli": {},
 		"./features/tmux": {},
